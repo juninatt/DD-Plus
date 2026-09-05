@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "found": 2,
+    "returned": 2,
+    "limit": 3,
+    "page": 1
+  },
+  "data": [
+    {
+      "uuid": "1ff83b8b-289d-41d2-b141-6c8584e0769f",
+      "title": "Tesla: The End Of The Road For My Bull Case (NASDAQ:TSLA)",
+      "description": "Tesla faces demand headwinds.",
+      "url": "https://seekingalpha.com/article/4810897-tesla-stock",
+      "image_url": "https://static.seekingalpha.com/cdn/s3/uploads/getty_images/tesla.jpg",
+      "language": "en",
+      "published_at": "2025-08-08T08:27:27.000000Z",
+      "source": "seekingalpha.com",
+      "snippet": "Small deep value individual investor.",
+      "entities": [
+        { "symbol": "TSLA" }
+      ]
+    },
+    {
+      "uuid": "2aa94c9c-390e-52e3-c252-7d9695f187a0",
+      "title": "Apple supplier ramps up production ahead of holiday season",
+      "description": "Component suppliers report higher volumes.",
+      "url": "https://seekingalpha.com/article/4810898-apple-supplier",
+      "image_url": "https://static.seekingalpha.com/cdn/s3/uploads/getty_images/apple.jpg",
+      "language": "en",
+      "published_at": "2025-08-08T09:15:00.000000Z",
+      "source": "seekingalpha.com",
+      "snippet": "Suppliers ramp up ahead of Q4.",
+      "entities": [
+        { "symbol": "AAPL" }
+      ]
+    }
+  ]
+}

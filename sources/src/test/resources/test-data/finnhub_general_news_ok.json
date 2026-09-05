@@ -1,0 +1,24 @@
+[
+  {
+    "category": "top news",
+    "datetime": 1754602020,
+    "headline": "Instacart says its grocery partners are starting to embrace more competitive pricing",
+    "id": 7504927,
+    "image": "https://static2.finnhub.io/file/publicdatany/finnhubimage/market_watch_logo.png",
+    "related": "TSLA, AAPL",
+    "source": "MarketWatch",
+    "summary": "Shares of Instacart rallied late Thursday.",
+    "url": "https://www.marketwatch.com/story/instacart-says-its-grocery-partners"
+  },
+  {
+    "category": "top news",
+    "datetime": 1754602100,
+    "headline": "Nvidia shares climb after earnings beat expectations",
+    "id": 7504928,
+    "image": "https://static2.finnhub.io/file/publicdatany/finnhubimage/nvidia_logo.png",
+    "related": "NVDA",
+    "source": "Reuters",
+    "summary": "Nvidia posted quarterly results above analyst expectations.",
+    "url": "https://www.reuters.com/story/nvidia-shares-climb"
+  }
+]
