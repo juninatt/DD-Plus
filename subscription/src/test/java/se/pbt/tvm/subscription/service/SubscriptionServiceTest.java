@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import se.pbt.tvm.core.subscription.SchedulePreset;
+import se.pbt.tvm.subscription.config.SubscriptionStorageProperties;
 import se.pbt.tvm.subscription.format.SubscriptionFormatter;
 import se.pbt.tvm.subscription.persistence.SubscriptionStorage;
 import se.pbt.tvm.subscription.policy.SubscriptionIdGenerator;
@@ -25,6 +27,7 @@ class SubscriptionServiceTest {
     private SubscriptionIdGenerator idGenerator;
     private SubscriptionValidator validator;
     private SubscriptionFormatter formatter;
+    private SubscriptionStorageProperties storageProperties;
     private SubscriptionService service;
 
     @BeforeEach
@@ -33,8 +36,9 @@ class SubscriptionServiceTest {
         idGenerator = new SubscriptionIdGenerator();
         validator = new SubscriptionValidator(new SubscriptionSanitizer());
         formatter = new SubscriptionFormatter();
+        storageProperties = new SubscriptionStorageProperties();
 
-        service = new SubscriptionService(storage, idGenerator, validator, formatter);
+        service = new SubscriptionService(storage, idGenerator, validator, formatter, storageProperties);
     }
 
     @Nested
@@ -49,7 +53,7 @@ class SubscriptionServiceTest {
 
             when(storage.loadSubscriptions(anyString())).thenReturn(new ArrayList<>());
 
-            var result = service.save(sub, "subscriptions.yml");
+            var result = service.save(sub);
 
             assertTrue(result.success());
             assertTrue(result.message().contains("Subscription created with id:"));
@@ -59,7 +63,7 @@ class SubscriptionServiceTest {
         @Test
         @DisplayName("Fails when subscription is null")
         void save_withNullSubscription_returnsFailure() {
-            var result = service.save(null, "subscriptions.yml");
+            var result = service.save(null);
 
             assertFalse(result.success());
             assertEquals("Subscription cannot be null.", result.message());
@@ -72,7 +76,7 @@ class SubscriptionServiceTest {
             var invalid = SubscriptionTestFactory.subscription("x", null, true);
             when(storage.loadSubscriptions(anyString())).thenReturn(List.of());
 
-            var result = service.save(invalid, "subscriptions.yml");
+            var result = service.save(invalid);
 
             assertFalse(result.success());
             assertTrue(result.message().contains("filter cannot be null"));
@@ -87,7 +91,7 @@ class SubscriptionServiceTest {
 
             when(storage.loadSubscriptions(anyString())).thenThrow(new RuntimeException("Disk error"));
 
-            var result = service.save(sub, "subscriptions.yml");
+            var result = service.save(sub);
 
             assertFalse(result.success());
             assertTrue(result.message().contains("Failed to save subscription"));
@@ -200,6 +204,44 @@ class SubscriptionServiceTest {
             when(storage.loadSubscriptions(anyString())).thenThrow(new RuntimeException("Read error"));
 
             assertThrows(RuntimeException.class, () -> service.removeByIdOrKeyword(1, "Tech"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Finding subscriptions due for a schedule")
+    class FindEnabledBySchedule {
+
+        @Test
+        @DisplayName("Returns only enabled subscriptions matching the given preset")
+        void findEnabledBySchedule_withMixedSubscriptions_returnsOnlyMatching() {
+            var filter = SubscriptionTestFactory.filter(List.of("Tech"), List.of("TSLA"), "en");
+
+            var matching = SubscriptionTestFactory.subscription("sub-1", filter, true);
+            matching.setSchedule(SchedulePreset.MORNING);
+
+            var disabled = SubscriptionTestFactory.subscription("sub-2", filter, false);
+            disabled.setSchedule(SchedulePreset.MORNING);
+
+            var otherPreset = SubscriptionTestFactory.subscription("sub-3", filter, true);
+            otherPreset.setSchedule(SchedulePreset.EVENING);
+
+            when(storage.loadSubscriptions(anyString()))
+                    .thenReturn(List.of(matching, disabled, otherPreset));
+
+            var result = service.findEnabledBySchedule(SchedulePreset.MORNING);
+
+            assertEquals(1, result.size());
+            assertEquals("sub-1", result.get(0).getId());
+        }
+
+        @Test
+        @DisplayName("Returns empty list when nothing matches")
+        void findEnabledBySchedule_withNoMatches_returnsEmptyList() {
+            when(storage.loadSubscriptions(anyString())).thenReturn(List.of());
+
+            var result = service.findEnabledBySchedule(SchedulePreset.EVENING);
+
+            assertTrue(result.isEmpty());
         }
     }
 }

@@ -6,7 +6,6 @@ import se.pbt.tvm.core.subscription.SchedulePreset;
 import se.pbt.tvm.core.subscription.TelegramSubscribeCommand;
 import se.pbt.tvm.telegram.client.TelegramApiClient;
 import se.pbt.tvm.telegram.config.TelegramMsgProperties;
-import se.pbt.tvm.telegram.config.TelegramStorageProperties;
 import se.pbt.tvm.telegram.format.TelegramInputParser;
 import se.pbt.tvm.telegram.model.TelegramCommand;
 import se.pbt.tvm.subscription.contract.SubscriptionMapper;
@@ -27,10 +26,8 @@ import static org.mockito.Mockito.*;
 class TelegramServiceTest {
 
     private static final long CHAT_ID = 123L;
-    private static final String TEST_STORAGE_PATH = "subscriptions/telegram-subscriptions.yml";
 
     private static TelegramMsgProperties messageProperties;
-    private static TelegramStorageProperties storageProperties;
 
     private TelegramApiClient apiClient;
     private TelegramInputParser commandParser;
@@ -40,8 +37,6 @@ class TelegramServiceTest {
 
     @BeforeAll
     static void init_static_resources() {
-        storageProperties = new TelegramStorageProperties();
-        storageProperties.setSubscriptions(TEST_STORAGE_PATH);
         messageProperties = new TelegramMsgProperties();
     }
 
@@ -74,7 +69,7 @@ class TelegramServiceTest {
         errMsg.setUnexpected("UNEXPECTED");
         messageProperties.setError(errMsg);
 
-        service = new TelegramService(apiClient, commandParser, subscriptionService, mapper, messageProperties, storageProperties);
+        service = new TelegramService(apiClient, commandParser, subscriptionService, mapper, messageProperties);
     }
 
     //  /help and /start command tests
@@ -124,7 +119,7 @@ class TelegramServiceTest {
 
             service.handleTelegramCommand(new TelegramCommand(CHAT_ID, "/subscribe \"Tesla\" en 10"));
 
-            verify(subscriptionService).save(eq(mockSubscription), eq(TEST_STORAGE_PATH));
+            verify(subscriptionService).save(eq(mockSubscription));
             verify(apiClient).sendMessage(CHAT_ID, "SAVED");
         }
 
@@ -169,7 +164,7 @@ class TelegramServiceTest {
 
             service.handleTelegramCommand(new TelegramCommand(CHAT_ID, "/subscribe \"Tesla\" 10"));
 
-            verify(subscriptionService).save(eq(mockSubscription), eq(TEST_STORAGE_PATH));
+            verify(subscriptionService).save(eq(mockSubscription));
             verify(apiClient).sendMessage(CHAT_ID, "SAVED");
         }
 
@@ -534,7 +529,7 @@ class TelegramServiceTest {
 
             // Step 1: Subscribe
             service.handleTelegramCommand(new TelegramCommand(CHAT_ID, "/subscribe \"Tesla\" en 5"));
-            verify(subscriptionService).save(eq(mockSubscription), eq(TEST_STORAGE_PATH));
+            verify(subscriptionService).save(eq(mockSubscription));
             verify(apiClient).sendMessage(CHAT_ID, "SAVED");
 
             clearInvocations(apiClient);

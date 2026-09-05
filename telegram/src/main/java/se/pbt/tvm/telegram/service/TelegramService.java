@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 import se.pbt.tvm.core.subscription.TelegramSubscribeCommand;
 import se.pbt.tvm.telegram.client.TelegramApiClient;
 import se.pbt.tvm.telegram.config.TelegramMsgProperties;
-import se.pbt.tvm.telegram.config.TelegramStorageProperties;
 import se.pbt.tvm.telegram.format.TelegramInputParser;
 import se.pbt.tvm.telegram.model.TelegramCommand;
 
@@ -39,7 +38,6 @@ public class TelegramService {
     private final SubscriptionService subscriptionService;
     private final SubscriptionMapper<TelegramSubscribeCommand> mapper;
     private final TelegramMsgProperties messages;
-    private final TelegramStorageProperties storage;
 
     private final Map<String, Consumer<TelegramCommand>> commandHandlers = new HashMap<>();
 
@@ -48,15 +46,13 @@ public class TelegramService {
             TelegramInputParser inputParser,
             SubscriptionService subscriptionService,
             SubscriptionMapper<TelegramSubscribeCommand> mapper,
-            TelegramMsgProperties messages,
-            TelegramStorageProperties storage
+            TelegramMsgProperties messages
     ) {
         this.apiClient = apiClient;
         this.inputParser = inputParser;
         this.subscriptionService = subscriptionService;
         this.mapper = mapper;
         this.messages = messages;
-        this.storage = storage;
 
         commandHandlers.put("/help", this::handleHelp);
         commandHandlers.put("/start", this::handleHelp);
@@ -120,7 +116,7 @@ public class TelegramService {
 
             var subscription = mapper.map(subscribeCommand, normalizedKeywords);
 
-            subscriptionService.save(subscription, storage.getSubscriptions());
+            subscriptionService.save(subscription);
 
             log.info("New subscription saved for chatId={}", cmd.chatId());
             reply(cmd, messages.getSubscriptionMessage().getSaved()).subscribe();

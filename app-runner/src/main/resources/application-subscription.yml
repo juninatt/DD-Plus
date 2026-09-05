@@ -1,0 +1,3 @@
+subscription:
+  storage:
+    path: "subscriptions/subscriptions.yml"

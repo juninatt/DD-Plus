@@ -2,6 +2,8 @@ package se.pbt.tvm.subscription.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import se.pbt.tvm.core.subscription.SchedulePreset;
+import se.pbt.tvm.subscription.config.SubscriptionStorageProperties;
 import se.pbt.tvm.subscription.format.SubscriptionFormatter;
 import se.pbt.tvm.subscription.model.Subscription;
 import se.pbt.tvm.subscription.persistence.SubscriptionStorage;
@@ -18,17 +20,17 @@ import java.util.Optional;
  * <p>
  * This service ensures that subscriptions are structurally valid,
  * uniquely identified, and safely persisted through the storage layer.
+ * All operations share a single storage path from {@link SubscriptionStorageProperties}.
  */
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService {
 
-    private static final String STORAGE_PATH = "subscriptions.yml";
-
     private final SubscriptionStorage storage;
     private final SubscriptionIdGenerator idGenerator;
     private final SubscriptionValidator validator;
     private final SubscriptionFormatter formatter;
+    private final SubscriptionStorageProperties storageProperties;
 
     /**
      * Validates and saves a new subscription.
@@ -36,13 +38,13 @@ public class SubscriptionService {
      * Ensures the subscription passes all validation checks,
      * assigns a unique ID, and persists it to storage.
      */
-    public SaveResult save(Subscription subscription, String storagePath) {
+    public SaveResult save(Subscription subscription) {
         if (subscription == null) {
             return SaveResult.fail("Subscription cannot be null.");
         }
 
         try {
-            List<Subscription> existing = Optional.ofNullable(storage.loadSubscriptions(storagePath))
+            List<Subscription> existing = Optional.ofNullable(storage.loadSubscriptions(storageProperties.getPath()))
                     .orElseGet(ArrayList::new);
 
             var error = validator.validate(subscription, existing);
@@ -52,7 +54,7 @@ public class SubscriptionService {
 
             subscription.setId(idGenerator.generateUniqueId(subscription, existing));
             existing.add(subscription);
-            storage.saveSubscriptions(existing, storagePath);
+            storage.saveSubscriptions(existing, storageProperties.getPath());
 
             return SaveResult.ok("Subscription created with id: " + subscription.getId());
         } catch (Exception e) {
@@ -66,7 +68,7 @@ public class SubscriptionService {
      */
     public List<String> listByChatId(long chatId) {
         try {
-            List<Subscription> all = Optional.ofNullable(storage.loadSubscriptions(STORAGE_PATH))
+            List<Subscription> all = Optional.ofNullable(storage.loadSubscriptions(storageProperties.getPath()))
                     .orElseGet(List::of);
 
             return all.stream()
@@ -76,6 +78,22 @@ public class SubscriptionService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to list subscriptions: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Returns all enabled subscriptions due for the given schedule preset.
+     * <p>
+     * Used by the dispatch scheduler to determine which subscribers should
+     * receive news for a given firing cron.
+     */
+    public List<Subscription> findEnabledBySchedule(SchedulePreset preset) {
+        List<Subscription> all = Optional.ofNullable(storage.loadSubscriptions(storageProperties.getPath()))
+                .orElseGet(List::of);
+
+        return all.stream()
+                .filter(Subscription::isEnabled)
+                .filter(s -> s.getSchedule() == preset)
+                .toList();
     }
 
     /**
@@ -89,7 +107,7 @@ public class SubscriptionService {
         }
 
         try {
-            List<Subscription> all = Optional.ofNullable(storage.loadSubscriptions(STORAGE_PATH))
+            List<Subscription> all = Optional.ofNullable(storage.loadSubscriptions(storageProperties.getPath()))
                     .orElseGet(ArrayList::new);
 
             String target = arg.trim().toLowerCase();
@@ -110,7 +128,7 @@ public class SubscriptionService {
             }
 
             if (removed) {
-                storage.saveSubscriptions(remaining, STORAGE_PATH);
+                storage.saveSubscriptions(remaining, storageProperties.getPath());
             }
 
             return removed;

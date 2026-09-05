@@ -7,5 +7,6 @@ spring:
       - optional:application-telegram.yml
       - optional:application-finnhub.yml
       - optional:application-marketaux.yml
+      - optional:application-subscription.yml
   main:
     web-application-type: none
