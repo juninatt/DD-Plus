@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import se.pbt.tvm.core.news.NewsGroup;
 import se.pbt.tvm.core.news.NewsItem;
 import se.pbt.tvm.core.news.NewsSource;
 import se.pbt.tvm.core.notification.Notification;
 import se.pbt.tvm.core.notification.NotificationChannel;
 import se.pbt.tvm.core.subscription.SchedulePreset;
 import se.pbt.tvm.dispatch.filter.SubscriptionFilterMatcher;
+import se.pbt.tvm.dispatch.grouping.NewsGrouper;
 import se.pbt.tvm.subscription.model.Subscription;
 import se.pbt.tvm.subscription.service.SubscriptionService;
 
@@ -17,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Ties subscription schedules to news fetching, filtering, and delivery.
@@ -58,8 +62,8 @@ public class NewsDispatchScheduler {
     }
 
     /**
-     * Fetches all sources once and delivers matching items to every subscription due for
-     * the given preset.
+     * Fetches all sources once, groups items that likely cover the same event, and
+     * delivers matching groups to every subscription due for the given preset.
      */
     void dispatch(SchedulePreset preset) {
         List<Subscription> due = subscriptionService.findEnabledBySchedule(preset);
@@ -73,14 +77,17 @@ public class NewsDispatchScheduler {
             return;
         }
 
+        List<NewsGroup> allGroups = NewsGrouper.group(allNews);
+
         for (Subscription subscription : due) {
-            List<NewsItem> matched = allNews.stream()
-                    .filter(item -> SubscriptionFilterMatcher.matches(item, subscription.getFilter()))
+            List<NewsGroup> matched = allGroups.stream()
+                    .filter(group -> group.items().stream()
+                            .anyMatch(item -> SubscriptionFilterMatcher.matches(item, subscription.getFilter())))
                     .limit(Math.max(subscription.getMaxItems(), 0))
                     .toList();
 
-            for (NewsItem item : matched) {
-                Notification notification = toNotification(item);
+            for (NewsGroup group : matched) {
+                Notification notification = toNotification(group);
                 for (NotificationChannel channel : channels) {
                     channel.send(subscription.getChatId(), notification);
                 }
@@ -109,14 +116,27 @@ public class NewsDispatchScheduler {
         return List.copyOf(deduped.values());
     }
 
-    private Notification toNotification(NewsItem item) {
+    /**
+     * Builds a Notification from a group's primary (earliest-published) item, listing
+     * every distinct source in the group so a subscriber can see a story is corroborated
+     * by more than one outlet even though only the primary's link is included.
+     */
+    private Notification toNotification(NewsGroup group) {
+        NewsItem primary = group.primary();
+
+        String sources = group.items().stream()
+                .map(NewsItem::source)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.joining(", "));
+
         return new Notification(
-                item.title(),
-                item.description(),
-                item.url() == null ? null : item.url().toString(),
-                item.source(),
-                item.publishedAt(),
-                item.tickers()
+                primary.title(),
+                primary.description(),
+                primary.url() == null ? null : primary.url().toString(),
+                sources.isBlank() ? null : sources,
+                primary.publishedAt(),
+                primary.tickers()
         );
     }
 }
