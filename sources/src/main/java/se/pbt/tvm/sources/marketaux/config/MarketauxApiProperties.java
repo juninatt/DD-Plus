@@ -1,4 +1,4 @@
-package se.pbt.tvm.newsprovider.marketaux.config;
+package se.pbt.tvm.sources.marketaux.config;
 
 import lombok.Getter;
 import lombok.Setter;

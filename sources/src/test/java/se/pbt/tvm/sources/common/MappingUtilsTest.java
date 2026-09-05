@@ -1,4 +1,4 @@
-package se.pbt.tvm.newsprovider.common;
+package se.pbt.tvm.sources.common;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,7 +11,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("MappingUtils — parse/validate helpers")
+@DisplayName("MappingUtils")
 class MappingUtilsTest {
 
     @Test

@@ -1,13 +1,15 @@
-package se.pbt.tvm.newsprovider.marketaux.mapper;
+package se.pbt.tvm.sources.marketaux.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import se.pbt.tvm.core.news.NewsItem;
-import se.pbt.tvm.newsprovider.common.MappingUtils;
+import se.pbt.tvm.sources.common.MappingUtils;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Maps a Marketaux news JSON node to a {@link NewsItem} with safe parsing and fallbacks.

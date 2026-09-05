@@ -1,12 +1,14 @@
-package se.pbt.tvm.newsprovider.finnhub.mapper;
+package se.pbt.tvm.sources.finnhub.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import se.pbt.tvm.core.news.NewsItem;
-import se.pbt.tvm.newsprovider.common.MappingUtils;
+import se.pbt.tvm.sources.common.MappingUtils;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Maps a Finnhub news JSON node to a {@link NewsItem} with safe parsing and fallbacks.

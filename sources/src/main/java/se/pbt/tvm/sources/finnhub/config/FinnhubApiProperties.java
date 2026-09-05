@@ -1,4 +1,4 @@
-package se.pbt.tvm.newsprovider.finnhub.config;
+package se.pbt.tvm.sources.finnhub.config;
 
 import lombok.Getter;
 import lombok.Setter;

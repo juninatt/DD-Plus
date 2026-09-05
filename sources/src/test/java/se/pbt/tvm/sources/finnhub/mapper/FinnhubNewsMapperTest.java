@@ -1,4 +1,4 @@
-package se.pbt.tvm.newsprovider.finnhub.mapper;
+package se.pbt.tvm.sources.finnhub.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;

@@ -1,4 +1,4 @@
-package se.pbt.tvm.newsprovider.common;
+package se.pbt.tvm.sources.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
