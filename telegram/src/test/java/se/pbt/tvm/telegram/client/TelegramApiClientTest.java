@@ -126,6 +126,38 @@ class TelegramApiClientTest {
         assertThat(json.get("text").asText()).isEqualTo(sample);
     }
 
+    @Test
+    @DisplayName("sendFormattedMessage POSTs text as-is, without MarkdownV2 escaping")
+    void sendFormattedMessage_sendsTextUnescaped() throws Exception {
+        // given
+        server.enqueue(new MockResponse().setResponseCode(200).setBody("{\"ok\":true}"));
+        TelegramApiClient client = new TelegramApiClient(server.url("/").toString(), "TOKEN");
+        String preFormatted = "*Bold title*\n[Läs mer](https://example.com)";
+
+        // when
+        StepVerifier.create(client.sendFormattedMessage(9L, preFormatted)).verifyComplete();
+
+        // then
+        var recorded = server.takeRequest();
+        JsonNode json = mapper.readTree(recorded.getBody().readUtf8());
+        assertThat(json.get("chat_id").asLong()).isEqualTo(9L);
+        assertThat(json.get("text").asText()).isEqualTo(preFormatted);
+        assertThat(json.get("parse_mode").asText()).isEqualTo("MarkdownV2");
+    }
+
+    @Test
+    @DisplayName("sendFormattedMessage propagates error when server returns 5xx")
+    void sendFormattedMessage_propagatesErrorOnServerFailure() {
+        // given
+        server.enqueue(new MockResponse().setResponseCode(500));
+        TelegramApiClient client = new TelegramApiClient(server.url("/").toString(), "TOKEN");
+
+        // when / then
+        StepVerifier.create(client.sendFormattedMessage(1L, "*x*"))
+                .expectError()
+                .verify();
+    }
+
     static Stream<String> unicodeSamples() {
         return Stream.of(
                 "Hej åäö 😀",                 // Swedish + emoji

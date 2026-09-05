@@ -113,7 +113,10 @@ public class NewsDispatchScheduler {
         return new Notification(
                 item.title(),
                 item.description(),
-                item.url() == null ? null : item.url().toString()
+                item.url() == null ? null : item.url().toString(),
+                item.source(),
+                item.publishedAt(),
+                item.tickers()
         );
     }
 }

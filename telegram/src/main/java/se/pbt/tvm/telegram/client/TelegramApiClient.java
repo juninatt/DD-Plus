@@ -39,7 +39,20 @@ public final class TelegramApiClient {
      * Text is escaped to ensure valid MarkdownV2 formatting.
      */
     public Mono<Void> sendMessage(long chatId, String text) {
-        String safeText = TelegramOutputFormatter.escapeMarkdown(text);
+        return sendRaw(chatId, TelegramOutputFormatter.escapeMarkdown(text));
+    }
+
+    /**
+     * Sends text that is already formatted for MarkdownV2 -- unlike {@link #sendMessage},
+     * this does not blanket-escape the text first. Use this when the caller has already
+     * escaped its own dynamic content and deliberately left Markdown syntax (bold, links)
+     * intact around it.
+     */
+    public Mono<Void> sendFormattedMessage(long chatId, String preFormattedMarkdown) {
+        return sendRaw(chatId, preFormattedMarkdown);
+    }
+
+    private Mono<Void> sendRaw(long chatId, String safeText) {
         String payload = "{\"chat_id\":" + chatId
                 + ",\"text\":" + TelegramOutputFormatter.json(safeText)
                 + ",\"parse_mode\":\"" + PARSE_MODE + "\"}";
