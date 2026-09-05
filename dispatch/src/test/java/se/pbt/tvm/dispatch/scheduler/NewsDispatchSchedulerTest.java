@@ -20,9 +20,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -40,6 +39,7 @@ class NewsDispatchSchedulerTest {
         sourceA = mock(NewsSource.class);
         sourceB = mock(NewsSource.class);
         channel = mock(NotificationChannel.class);
+        when(channel.id()).thenReturn("telegram");
         subscriptionService = mock(SubscriptionService.class);
 
         scheduler = new NewsDispatchScheduler(List.of(sourceA, sourceB), List.of(channel), subscriptionService);
@@ -102,7 +102,7 @@ class NewsDispatchSchedulerTest {
 
             scheduler.dispatch(SchedulePreset.MORNING);
 
-            verify(channel).send(eq(1L), any(Notification.class));
+            verify(channel).send(eq("1"), any(Notification.class));
         }
 
         @Test
@@ -117,7 +117,7 @@ class NewsDispatchSchedulerTest {
 
             scheduler.dispatch(SchedulePreset.MORNING);
 
-            verify(channel, times(1)).send(anyLong(), any(Notification.class));
+            verify(channel, times(1)).send(anyString(), any(Notification.class));
         }
     }
 
@@ -151,7 +151,7 @@ class NewsDispatchSchedulerTest {
 
             scheduler.dispatch(SchedulePreset.MORNING);
 
-            verify(channel, times(1)).send(anyLong(), any(Notification.class));
+            verify(channel, times(1)).send(anyString(), any(Notification.class));
         }
 
         @Test
@@ -165,8 +165,8 @@ class NewsDispatchSchedulerTest {
 
             scheduler.dispatch(SchedulePreset.MORNING);
 
-            verify(channel).send(eq(1L), any(Notification.class));
-            verify(channel).send(eq(2L), any(Notification.class));
+            verify(channel).send(eq("1"), any(Notification.class));
+            verify(channel).send(eq("2"), any(Notification.class));
         }
     }
 
@@ -189,7 +189,7 @@ class NewsDispatchSchedulerTest {
             scheduler.dispatch(SchedulePreset.MORNING);
 
             ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
-            verify(channel, times(1)).send(anyLong(), captor.capture());
+            verify(channel, times(1)).send(anyString(), captor.capture());
             assertTrue(captor.getValue().source().contains("Reuters"));
             assertTrue(captor.getValue().source().contains("MarketWatch"));
         }
@@ -208,7 +208,7 @@ class NewsDispatchSchedulerTest {
 
             scheduler.dispatch(SchedulePreset.MORNING);
 
-            verify(channel, times(2)).send(anyLong(), any(Notification.class));
+            verify(channel, times(2)).send(anyString(), any(Notification.class));
         }
 
         @Test
@@ -225,7 +225,51 @@ class NewsDispatchSchedulerTest {
 
             scheduler.dispatch(SchedulePreset.MORNING);
 
-            verify(channel, times(1)).send(anyLong(), any(Notification.class));
+            verify(channel, times(1)).send(anyString(), any(Notification.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Resolving the recipient per channel")
+    class RecipientResolution {
+
+        @Test
+        @DisplayName("Delivers to both Telegram and email when the subscription has both configured")
+        void dispatch_withTelegramAndEmailChannels_deliversToBoth() {
+            NotificationChannel emailChannel = mock(NotificationChannel.class);
+            when(emailChannel.id()).thenReturn("email");
+            var multiChannelScheduler = new NewsDispatchScheduler(
+                    List.of(sourceA, sourceB), List.of(channel, emailChannel), subscriptionService);
+
+            var sub = subscription(1L, 10, List.of("tesla"));
+            sub.setEmail("user@example.com");
+            when(subscriptionService.findEnabledBySchedule(SchedulePreset.MORNING)).thenReturn(List.of(sub));
+            when(sourceA.fetchLatest()).thenReturn(List.of(item("1", "Tesla rallies", List.of())));
+            when(sourceB.fetchLatest()).thenReturn(List.of());
+
+            multiChannelScheduler.dispatch(SchedulePreset.MORNING);
+
+            verify(channel).send(eq("1"), any(Notification.class));
+            verify(emailChannel).send(eq("user@example.com"), any(Notification.class));
+        }
+
+        @Test
+        @DisplayName("Skips the email channel entirely when the subscription has no email set")
+        void dispatch_withoutEmailConfigured_skipsEmailChannel() {
+            NotificationChannel emailChannel = mock(NotificationChannel.class);
+            when(emailChannel.id()).thenReturn("email");
+            var multiChannelScheduler = new NewsDispatchScheduler(
+                    List.of(sourceA, sourceB), List.of(channel, emailChannel), subscriptionService);
+
+            var sub = subscription(1L, 10, List.of("tesla"));
+            when(subscriptionService.findEnabledBySchedule(SchedulePreset.MORNING)).thenReturn(List.of(sub));
+            when(sourceA.fetchLatest()).thenReturn(List.of(item("1", "Tesla rallies", List.of())));
+            when(sourceB.fetchLatest()).thenReturn(List.of());
+
+            multiChannelScheduler.dispatch(SchedulePreset.MORNING);
+
+            verify(channel).send(eq("1"), any(Notification.class));
+            verify(emailChannel, never()).send(anyString(), any(Notification.class));
         }
     }
 }

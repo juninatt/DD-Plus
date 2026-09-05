@@ -3,21 +3,20 @@ package se.pbt.tvm.core.notification;
 /**
  * A delivery channel capable of sending a {@link Notification} to a recipient.
  * <p>
- * {@code recipientId} is currently Telegram-chat-id shaped, since Telegram is
- * the only implemented channel today. A future channel addressed differently
- * (e.g. email) will need a broader recipient concept on the subscription
- * domain model — this interface only decouples *how* a message is delivered,
- * not yet *who* it's addressed to.
+ * {@code recipientAddress} is a channel-agnostic string (a Telegram chat id in string
+ * form, an email address, etc.) — the caller is responsible for resolving the correct
+ * address for a given subscription and channel; a channel just knows how to deliver
+ * to an address shaped for itself.
  */
 public interface NotificationChannel {
 
     /**
-     * Short, stable identifier for this channel (e.g. "telegram").
+     * Short, stable identifier for this channel (e.g. "telegram", "email").
      */
     String id();
 
     /**
-     * Sends the given notification to the given recipient via this channel.
+     * Sends the given notification to the given recipient address via this channel.
      */
-    void send(long recipientId, Notification notification);
+    void send(String recipientAddress, Notification notification);
 }

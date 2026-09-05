@@ -37,11 +37,19 @@ public class TelegramNotificationChannel implements NotificationChannel {
     }
 
     @Override
-    public void send(long recipientId, Notification notification) {
+    public void send(String recipientAddress, Notification notification) {
+        long chatId;
         try {
-            apiClient.sendFormattedMessage(recipientId, format(notification)).block();
+            chatId = Long.parseLong(recipientAddress);
+        } catch (NumberFormatException | NullPointerException e) {
+            log.warn("Skipping Telegram notification: '{}' is not a valid chat id", recipientAddress);
+            return;
+        }
+
+        try {
+            apiClient.sendFormattedMessage(chatId, format(notification)).block();
         } catch (Exception e) {
-            log.error("Failed to send Telegram notification to chatId={}", recipientId, e);
+            log.error("Failed to send Telegram notification to chatId={}", chatId, e);
         }
     }
 

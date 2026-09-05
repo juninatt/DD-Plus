@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 class TelegramNotificationChannelTest {
 
     private static final long CHAT_ID = 123L;
+    private static final String RECIPIENT = String.valueOf(CHAT_ID);
 
     private TelegramApiClient apiClient;
     private TelegramNotificationChannel channel;
@@ -42,10 +43,18 @@ class TelegramNotificationChannelTest {
     @Test
     @DisplayName("Sends via sendFormattedMessage, not the escaping sendMessage")
     void send_usesFormattedSendPath() {
-        channel.send(CHAT_ID, new Notification("Title", "Body", null, null, null, null));
+        channel.send(RECIPIENT, new Notification("Title", "Body", null, null, null, null));
 
         verify(apiClient).sendFormattedMessage(eq(CHAT_ID), anyString());
         verify(apiClient, never()).sendMessage(anyLong(), anyString());
+    }
+
+    @Test
+    @DisplayName("Skips sending when the recipient address is not a valid chat id")
+    void send_withNonNumericRecipient_doesNotCallApiClient() {
+        channel.send("not-a-chat-id", new Notification("Title", "Body", null, null, null, null));
+
+        verifyNoInteractions(apiClient);
     }
 
     @Nested
@@ -55,7 +64,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Renders the title in bold with a leading emoji")
         void format_withTitle_rendersBold() {
-            channel.send(CHAT_ID, new Notification("Tesla rallies", null, null, null, null, null));
+            channel.send(RECIPIENT, new Notification("Tesla rallies", null, null, null, null, null));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID), eq("📰 *Tesla rallies*"));
         }
@@ -63,7 +72,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Escapes MarkdownV2 special characters in the title")
         void format_withMarkdownSpecialsInTitle_escapesThem() {
-            channel.send(CHAT_ID, new Notification("Q3 report: +10% (beats est.)", null, null, null, null, null));
+            channel.send(RECIPIENT, new Notification("Q3 report: +10% (beats est.)", null, null, null, null, null));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID),
                     eq("📰 *Q3 report: \\+10% \\(beats est\\.\\)*"));
@@ -74,7 +83,7 @@ class TelegramNotificationChannelTest {
         void format_withSourceAndDate_joinsWithMiddleDot() {
             Instant publishedAt = Instant.parse("2026-08-08T12:00:00Z");
 
-            channel.send(CHAT_ID, new Notification("Title", null, null, "MarketWatch", publishedAt, null));
+            channel.send(RECIPIENT, new Notification("Title", null, null, "MarketWatch", publishedAt, null));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID), contains("📌 MarketWatch · "));
         }
@@ -82,7 +91,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Omits the meta line entirely when source and date are both missing")
         void format_withoutSourceOrDate_omitsMetaLine() {
-            channel.send(CHAT_ID, new Notification("Title", null, null, null, null, null));
+            channel.send(RECIPIENT, new Notification("Title", null, null, null, null, null));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID), argThatDoesNotContain("📌"));
         }
@@ -90,7 +99,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Renders tickers joined by commas with a tag emoji")
         void format_withTickers_joinsWithCommas() {
-            channel.send(CHAT_ID, new Notification("Title", null, null, null, null, List.of("TSLA", "AAPL")));
+            channel.send(RECIPIENT, new Notification("Title", null, null, null, null, List.of("TSLA", "AAPL")));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID), contains("🏷 TSLA, AAPL"));
         }
@@ -98,7 +107,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Omits the ticker line when the list is empty")
         void format_withEmptyTickers_omitsTickerLine() {
-            channel.send(CHAT_ID, new Notification("Title", null, null, null, null, List.of()));
+            channel.send(RECIPIENT, new Notification("Title", null, null, null, null, List.of()));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID), argThatDoesNotContain("🏷"));
         }
@@ -106,7 +115,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Renders the url as a Markdown link, escaping ')' inside it")
         void format_withUrl_rendersAsMarkdownLink() {
-            channel.send(CHAT_ID, new Notification("Title", null, "https://example.com/a(b)", null, null, null));
+            channel.send(RECIPIENT, new Notification("Title", null, "https://example.com/a(b)", null, null, null));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID),
                     contains("🔗 [Läs mer](https://example.com/a(b\\))"));
@@ -115,7 +124,7 @@ class TelegramNotificationChannelTest {
         @Test
         @DisplayName("Separates present sections with a blank line")
         void format_withMultipleSections_separatesWithBlankLine() {
-            channel.send(CHAT_ID, new Notification("Title", "Body", "https://example.com", null, null, null));
+            channel.send(RECIPIENT, new Notification("Title", "Body", "https://example.com", null, null, null));
 
             verify(apiClient).sendFormattedMessage(eq(CHAT_ID),
                     eq("📰 *Title*\n\nBody\n\n🔗 [Läs mer](https://example.com)"));
@@ -128,7 +137,7 @@ class TelegramNotificationChannelTest {
         when(apiClient.sendFormattedMessage(anyLong(), anyString()))
                 .thenReturn(Mono.error(new RuntimeException("API down")));
 
-        assertDoesNotThrow(() -> channel.send(CHAT_ID, new Notification("Title", "Body", null, null, null, null)));
+        assertDoesNotThrow(() -> channel.send(RECIPIENT, new Notification("Title", "Body", null, null, null, null)));
     }
 
     private static String argThatDoesNotContain(String needle) {

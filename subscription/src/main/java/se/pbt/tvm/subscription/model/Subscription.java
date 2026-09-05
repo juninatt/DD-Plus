@@ -1,6 +1,7 @@
 package se.pbt.tvm.subscription.model;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.EqualsAndHashCode;
@@ -16,6 +17,9 @@ import java.util.TimeZone;
  * A subscription contains a {@link SubscriptionFilter} for filtering rules
  * and a {@link SchedulePreset} that determines the delivery schedule.
  * It also holds metadata such as chat ID, timezone, and delivery settings.
+ * <p>
+ * {@code email} is optional -- when set, the subscription is also (or instead) delivered
+ * via the email channel, in addition to Telegram via {@code chatId}.
  */
 // TODO: Replace constructor with builder annotation
 @Getter
@@ -27,6 +31,8 @@ public class Subscription {
     private String id;
     @Positive
     private long chatId;
+    @Email
+    private String email;
     @NotNull
     private SchedulePreset schedule;
     @NotNull
@@ -43,6 +49,7 @@ public class Subscription {
         return "Subscription{" +
                 "id='" + id + '\'' +
                 ", chatId='" + chatId + '\'' +
+                ", email='" + email + '\'' +
                 ", schedule=" + (schedule != null ? schedule.name() : null) +
                 ", timezone=" + timezone +
                 ", filter=" + filter +

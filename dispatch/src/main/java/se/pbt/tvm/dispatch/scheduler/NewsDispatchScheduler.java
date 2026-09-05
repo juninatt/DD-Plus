@@ -91,10 +91,25 @@ public class NewsDispatchScheduler {
             for (NewsGroup group : matched) {
                 Notification notification = toNotification(group);
                 for (NotificationChannel channel : channels) {
-                    channel.send(subscription.getChatId(), notification);
+                    String recipient = resolveRecipient(channel, subscription);
+                    if (recipient != null) {
+                        channel.send(recipient, notification);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Resolves the address a given channel should deliver to for this subscription, or
+     * null if the subscriber hasn't configured that channel (e.g. no email set).
+     */
+    private String resolveRecipient(NotificationChannel channel, Subscription subscription) {
+        return switch (channel.id()) {
+            case "telegram" -> subscription.getChatId() > 0 ? String.valueOf(subscription.getChatId()) : null;
+            case "email" -> subscription.getEmail();
+            default -> null;
+        };
     }
 
     /**
