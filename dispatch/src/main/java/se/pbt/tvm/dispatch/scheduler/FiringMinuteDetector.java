@@ -3,12 +3,13 @@ package se.pbt.tvm.dispatch.scheduler;
 import org.springframework.scheduling.support.CronExpression;
 import se.pbt.tvm.core.subscription.SchedulePreset;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 /**
  * Determines whether a given instant falls within the firing minute of a
- * {@link SchedulePreset}'s cron expression.
+ * {@link SchedulePreset}'s cron expression, evaluated in that preset's own timezone.
  * <p>
  * {@code @Scheduled} annotations can't reference {@code SchedulePreset.MORNING.getCron()}
  * directly (it isn't a compile-time constant), so instead a single per-minute tick checks
@@ -21,8 +22,8 @@ public final class FiringMinuteDetector {
 
     private FiringMinuteDetector() {}
 
-    public static boolean isFiring(SchedulePreset preset, LocalDateTime now) {
-        LocalDateTime nowMinute = now.truncatedTo(ChronoUnit.MINUTES);
+    public static boolean isFiring(SchedulePreset preset, Instant now) {
+        LocalDateTime nowMinute = now.atZone(preset.getZone()).toLocalDateTime().truncatedTo(ChronoUnit.MINUTES);
         CronExpression cron = CronExpression.parse(preset.getCron());
         LocalDateTime next = cron.next(nowMinute.minusSeconds(1));
         return next != null && !next.isAfter(nowMinute);

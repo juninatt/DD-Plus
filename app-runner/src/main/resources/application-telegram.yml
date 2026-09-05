@@ -23,7 +23,8 @@ telegram:
         <keywords>  – one or more words; quote if spaces are needed
         <language>  – two letters, e.g., en, sv
         [schedule]  – (optional) morning|evening|morning_evening|morning_lunch_evening
-                       aliases: m|e|me|mle
+                       |europe_open|europe_close|us_open|us_close
+                       aliases: m|e|me|mle|eo|ec|uo|uc
         <maxItems>  – maximum number of news items (1–20)
 
       Tip: use /help to see this again.

@@ -33,7 +33,15 @@ public class TelegramInputParser {
             Map.entry("morning_evening", SchedulePreset.MORNING_EVENING),
             Map.entry("me", SchedulePreset.MORNING_EVENING),
             Map.entry("morning_lunch_evening", SchedulePreset.MORNING_LUNCH_EVENING),
-            Map.entry("mle", SchedulePreset.MORNING_LUNCH_EVENING)
+            Map.entry("mle", SchedulePreset.MORNING_LUNCH_EVENING),
+            Map.entry("europe_open", SchedulePreset.EUROPE_MARKET_OPEN),
+            Map.entry("eo", SchedulePreset.EUROPE_MARKET_OPEN),
+            Map.entry("europe_close", SchedulePreset.EUROPE_MARKET_CLOSE),
+            Map.entry("ec", SchedulePreset.EUROPE_MARKET_CLOSE),
+            Map.entry("us_open", SchedulePreset.US_MARKET_OPEN),
+            Map.entry("uo", SchedulePreset.US_MARKET_OPEN),
+            Map.entry("us_close", SchedulePreset.US_MARKET_CLOSE),
+            Map.entry("uc", SchedulePreset.US_MARKET_CLOSE)
     );
 
     /**
@@ -41,7 +49,8 @@ public class TelegramInputParser {
      * Format:
      *   /subscribe <keywords...> <language> [schedule] <maxItems>
      * Where [schedule] is optional and can be one of:
-     *   morning|m, evening|e, morning_evening|me, morning_lunch_evening|mle
+     *   morning|m, evening|e, morning_evening|me, morning_lunch_evening|mle,
+     *   europe_open|eo, europe_close|ec, us_open|uo, us_close|uc
      */
     public TelegramSubscribeCommand parseSubscribeCommand(TelegramCommand command) {
         List<String> tokens = extractTokens(command.message().strip());

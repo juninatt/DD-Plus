@@ -15,7 +15,7 @@ import se.pbt.tvm.dispatch.grouping.NewsGrouper;
 import se.pbt.tvm.subscription.model.Subscription;
 import se.pbt.tvm.subscription.service.SubscriptionService;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +29,10 @@ import java.util.stream.Collectors;
  * {@link FiringMinuteDetector} rather than one {@code @Scheduled} method per preset, so
  * adding a new preset later needs no changes here.
  * <p>
- * Note: {@link Subscription#getTimezone()} is not applied to firing detection yet — all
- * subscriptions on a given preset fire together in the server's default timezone.
+ * Note: each {@link SchedulePreset} fires in its own configured timezone (see
+ * {@link SchedulePreset#getZone()}); {@link Subscription#getTimezone()} is not applied on
+ * top of that yet -- every subscriber on a given preset fires at the same instant
+ * regardless of their own timezone setting.
  */
 @Component
 public class NewsDispatchScheduler {
@@ -53,7 +55,7 @@ public class NewsDispatchScheduler {
 
     @Scheduled(fixedRate = 60_000)
     public void tick() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         for (SchedulePreset preset : SchedulePreset.values()) {
             if (FiringMinuteDetector.isFiring(preset, now)) {
                 dispatch(preset);
