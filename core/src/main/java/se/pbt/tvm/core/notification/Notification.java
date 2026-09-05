@@ -1,4 +1,4 @@
-package se.pbt.tvm.telegram.model;
+package se.pbt.tvm.core.notification;
 
 /**
  * Represents a notification message used as the input model
@@ -9,4 +9,3 @@ public record Notification(
         String body,
         String url
 ) {}
-
