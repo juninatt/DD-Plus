@@ -8,5 +8,6 @@ spring:
       - optional:application-finnhub.yml
       - optional:application-marketaux.yml
       - optional:application-subscription.yml
+      - optional:application-email.yml
   main:
     web-application-type: none

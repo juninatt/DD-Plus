@@ -1,0 +1,5 @@
+email:
+  api:
+    base-url: https://api.resend.com
+    token: ${RESEND_API_KEY}
+    from-address: ${RESEND_FROM_ADDRESS}

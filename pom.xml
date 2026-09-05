@@ -15,6 +15,7 @@
         <module>telegram</module>
         <module>subscription</module>
         <module>dispatch</module>
+        <module>email</module>
     </modules>
 
     <properties>
