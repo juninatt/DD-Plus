@@ -1,11 +1,11 @@
-package se.pbt.mn.telegram.mapper;
+package se.pbt.mn.subscription.mapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import se.pbt.mn.core.subscription.SchedulePreset;
-import se.pbt.mn.core.subscription.TelegramSubscribeCommand;
+import se.pbt.mn.core.subscription.SubscribeCommand;
 import se.pbt.mn.subscription.model.Subscription;
 import se.pbt.mn.subscription.model.SubscriptionFilter;
 
@@ -15,8 +15,8 @@ import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("TelegramSubscriptionMapper")
-class TelegramSubscriptionMapperTest {
+@DisplayName("SubscribeCommandMapper")
+class SubscribeCommandMapperTest {
 
     private static final long DEFAULT_CHAT_ID = 123L;
     private static final String DEFAULT_LANGUAGE = "en";
@@ -24,13 +24,13 @@ class TelegramSubscriptionMapperTest {
     private static final List<String> IGNORED_KEYWORD_LIST = List.of("Ignored");
     private static final SchedulePreset DEFAULT_SCHEDULE = SchedulePreset.MORNING;
 
-    private TelegramSubscribeCommand defaultCommand;
-    private TelegramSubscriptionMapper mapper;
+    private SubscribeCommand defaultCommand;
+    private SubscribeCommandMapper mapper;
 
     @BeforeEach
     void setup() {
-        mapper = new TelegramSubscriptionMapper();
-        defaultCommand = new TelegramSubscribeCommand(
+        mapper = new SubscribeCommandMapper();
+        defaultCommand = new SubscribeCommand(
                 DEFAULT_CHAT_ID,
                 DEFAULT_LANGUAGE,
                 DEFAULT_MAX_ITEMS,
@@ -70,7 +70,7 @@ class TelegramSubscriptionMapperTest {
         @Test
         @DisplayName("Applies default schedule when schedule is null")
         void appliesDefaultScheduleWhenNull() {
-            TelegramSubscribeCommand command = createCommandWithSchedule(null);
+            SubscribeCommand command = createCommandWithSchedule(null);
             Subscription subscription = mapper.map(command, List.of("ai"));
 
             assertEquals(SchedulePreset.MORNING_EVENING, subscription.getSchedule());
@@ -88,7 +88,7 @@ class TelegramSubscriptionMapperTest {
         @Test
         @DisplayName("Carries the email address into the subscription when present")
         void carriesEmailWhenPresent() {
-            TelegramSubscribeCommand command = createCommandWithEmail("user@example.com");
+            SubscribeCommand command = createCommandWithEmail("user@example.com");
             Subscription subscription = mapper.map(command, List.of("ai"));
 
             assertEquals("user@example.com", subscription.getEmail());
@@ -188,7 +188,7 @@ class TelegramSubscriptionMapperTest {
         @Test
         @DisplayName("Trims whitespace around language string")
         void trimsLanguage() {
-            TelegramSubscribeCommand command = createCommandWithLanguage("   sv   ");
+            SubscribeCommand command = createCommandWithLanguage("   sv   ");
 
             Subscription subscription = mapper.map(command, List.of("ai"));
 
@@ -198,7 +198,7 @@ class TelegramSubscriptionMapperTest {
         @Test
         @DisplayName("Sets language to null if blank")
         void setsLanguageToNullIfBlank() {
-            TelegramSubscribeCommand command = createCommandWithLanguage("   ");
+            SubscribeCommand command = createCommandWithLanguage("   ");
 
             Subscription subscription = mapper.map(command, List.of("ai"));
 
@@ -208,7 +208,7 @@ class TelegramSubscriptionMapperTest {
         @Test
         @DisplayName("Preserves valid language code as-is")
         void preservesValidLanguage() {
-            TelegramSubscribeCommand command = createCommandWithLanguage("en");
+            SubscribeCommand command = createCommandWithLanguage("en");
 
             Subscription subscription = mapper.map(command, List.of("ai"));
 
@@ -218,8 +218,8 @@ class TelegramSubscriptionMapperTest {
 
     //  Helpers
 
-    private TelegramSubscribeCommand createCommandWithLanguage(String language) {
-        return new TelegramSubscribeCommand(
+    private SubscribeCommand createCommandWithLanguage(String language) {
+        return new SubscribeCommand(
                 DEFAULT_CHAT_ID,
                 language,
                 DEFAULT_MAX_ITEMS,
@@ -229,8 +229,8 @@ class TelegramSubscriptionMapperTest {
         );
     }
 
-    private TelegramSubscribeCommand createCommandWithSchedule(SchedulePreset schedule) {
-        return new TelegramSubscribeCommand(
+    private SubscribeCommand createCommandWithSchedule(SchedulePreset schedule) {
+        return new SubscribeCommand(
                 DEFAULT_CHAT_ID,
                 DEFAULT_LANGUAGE,
                 DEFAULT_MAX_ITEMS,
@@ -240,8 +240,8 @@ class TelegramSubscriptionMapperTest {
         );
     }
 
-    private TelegramSubscribeCommand createCommandWithEmail(String email) {
-        return new TelegramSubscribeCommand(
+    private SubscribeCommand createCommandWithEmail(String email) {
+        return new SubscribeCommand(
                 DEFAULT_CHAT_ID,
                 DEFAULT_LANGUAGE,
                 DEFAULT_MAX_ITEMS,

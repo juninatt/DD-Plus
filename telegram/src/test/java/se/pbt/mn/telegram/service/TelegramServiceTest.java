@@ -3,7 +3,7 @@ package se.pbt.mn.telegram.service;
 import org.junit.jupiter.api.*;
 import reactor.core.publisher.Mono;
 import se.pbt.mn.core.subscription.SchedulePreset;
-import se.pbt.mn.core.subscription.TelegramSubscribeCommand;
+import se.pbt.mn.core.subscription.SubscribeCommand;
 import se.pbt.mn.telegram.client.TelegramApiClient;
 import se.pbt.mn.telegram.config.TelegramMsgProperties;
 import se.pbt.mn.telegram.format.TelegramInputParser;
@@ -32,7 +32,7 @@ class TelegramServiceTest {
     private TelegramApiClient apiClient;
     private TelegramInputParser commandParser;
     private SubscriptionService subscriptionService;
-    private SubscriptionMapper<TelegramSubscribeCommand> mapper;
+    private SubscriptionMapper<SubscribeCommand> mapper;
     private TelegramService service;
 
     @BeforeAll
@@ -109,7 +109,7 @@ class TelegramServiceTest {
         @Test
         @DisplayName("When valid command is received, subscription is persisted and confirmation sent")
         void subscribeCommand_withValidInput_persistsSubscriptionAndRepliesSaved() {
-            TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
+            SubscribeCommand parsedCmd = new SubscribeCommand(
                     CHAT_ID, "en", 10, List.of("Tesla"), SchedulePreset.MORNING, null
             );
             Subscription mockSubscription = new Subscription();
@@ -126,7 +126,7 @@ class TelegramServiceTest {
         @Test
         @DisplayName("When command contains multiple keywords, all are included in subscription")
         void subscribeCommand_withMultipleKeywords_includesAllKeywordsInSubscription() {
-            TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
+            SubscribeCommand parsedCmd = new SubscribeCommand(
                     CHAT_ID, "en", 10, List.of("Tesla", "AI", "Nvidia"), SchedulePreset.MORNING, null
             );
             when(commandParser.parseSubscribeCommand(any())).thenReturn(parsedCmd);
@@ -140,7 +140,7 @@ class TelegramServiceTest {
         @Test
         @DisplayName("When mapper throws exception, bot replies with 'unexpected' error message")
         void subscribeCommand_withMapperException_repliesUnexpectedError() {
-            TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
+            SubscribeCommand parsedCmd = new SubscribeCommand(
                     CHAT_ID, "en", 5, List.of("Tesla"), SchedulePreset.MORNING, null
             );
             when(commandParser.parseSubscribeCommand(any())).thenReturn(parsedCmd);
@@ -154,7 +154,7 @@ class TelegramServiceTest {
         @Test
         @DisplayName("When language is null, subscription is still persisted successfully")
         void subscribeCommand_withNullLanguage_persistsSubscriptionSuccessfully() {
-            TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
+            SubscribeCommand parsedCmd = new SubscribeCommand(
                     CHAT_ID, null, 10, List.of("Tesla"), SchedulePreset.MORNING, null
             );
             Subscription mockSubscription = new Subscription();
@@ -520,7 +520,7 @@ class TelegramServiceTest {
         @DisplayName("When user subscribes, lists and unsubscribes, full flow works correctly")
         void fullFlow_withSubscribeListAndUnsubscribe_worksAsExpected() {
             Subscription mockSubscription = new Subscription();
-            TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
+            SubscribeCommand parsedCmd = new SubscribeCommand(
                     CHAT_ID, "en", 5, List.of("Tesla"), SchedulePreset.EVENING, null
             );
 

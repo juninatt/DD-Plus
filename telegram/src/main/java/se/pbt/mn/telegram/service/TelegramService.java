@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import se.pbt.mn.core.subscription.TelegramSubscribeCommand;
+import se.pbt.mn.core.subscription.SubscribeCommand;
 import se.pbt.mn.telegram.client.TelegramApiClient;
 import se.pbt.mn.telegram.config.TelegramMsgProperties;
 import se.pbt.mn.telegram.format.TelegramInputParser;
@@ -36,7 +36,7 @@ public class TelegramService {
     private final TelegramApiClient apiClient;
     private final TelegramInputParser inputParser;
     private final SubscriptionService subscriptionService;
-    private final SubscriptionMapper<TelegramSubscribeCommand> mapper;
+    private final SubscriptionMapper<SubscribeCommand> mapper;
     private final TelegramMsgProperties messages;
 
     private final Map<String, Consumer<TelegramCommand>> commandHandlers = new HashMap<>();
@@ -45,7 +45,7 @@ public class TelegramService {
             TelegramApiClient apiClient,
             TelegramInputParser inputParser,
             SubscriptionService subscriptionService,
-            SubscriptionMapper<TelegramSubscribeCommand> mapper,
+            SubscriptionMapper<SubscribeCommand> mapper,
             TelegramMsgProperties messages
     ) {
         this.apiClient = apiClient;
@@ -99,7 +99,7 @@ public class TelegramService {
     /**
      * Handles the {@code /subscribe} command received from a Telegram user.
      * <p>
-     * The command is parsed into a {@link TelegramSubscribeCommand}, mapped into a {@link Subscription} domain object
+     * The command is parsed into a {@link SubscribeCommand}, mapped into a {@link Subscription} domain object
      * and then persisted through {@link SubscriptionService}.
      * <p>
      * Responds to the user with a confirmation message or an error message if

@@ -7,7 +7,7 @@ import java.util.List;
  * Defines a contract for mapping external subscription sources into
  * {@link Subscription} domain objects.
  *
- * @param <S> The type of the external source object (e.g. TelegramSubscribeCommand)
+ * @param <S> The type of the external source object (e.g. SubscribeCommand)
  */
 public interface SubscriptionMapper<S> {
 

@@ -1,8 +1,8 @@
-package se.pbt.mn.telegram.mapper;
+package se.pbt.mn.subscription.mapper;
 
 import org.springframework.stereotype.Component;
 import se.pbt.mn.core.subscription.SchedulePreset;
-import se.pbt.mn.core.subscription.TelegramSubscribeCommand;
+import se.pbt.mn.core.subscription.SubscribeCommand;
 import se.pbt.mn.subscription.contract.SubscriptionMapper;
 import se.pbt.mn.subscription.model.Subscription;
 import se.pbt.mn.subscription.model.SubscriptionFilter;
@@ -12,24 +12,25 @@ import java.util.Objects;
 import java.util.TimeZone;
 
 /**
- * Maps {@link TelegramSubscribeCommand} objects into {@link Subscription} domain entities.
+ * Maps {@link SubscribeCommand} objects into {@link Subscription} domain entities.
  * <p>
- * Implements the {@link SubscriptionMapper} contract to translate Telegram-specific
- * subscription requests into a standardized domain model used by the system.
+ * Implements the {@link SubscriptionMapper} contract to translate a parsed "subscribe"
+ * request -- regardless of which channel it arrived through -- into a standardized domain
+ * model used by the system.
  */
 @Component
-public class TelegramSubscriptionMapper implements SubscriptionMapper<TelegramSubscribeCommand> {
+public class SubscribeCommandMapper implements SubscriptionMapper<SubscribeCommand> {
 
     // TODO: Change to system default and update how-to-use
     private static final TimeZone DEFAULT_TZ = TimeZone.getTimeZone("Europe/Stockholm");
 
     /**
-     * Maps a {@link TelegramSubscribeCommand} into a {@link Subscription} domain object.
+     * Maps a {@link SubscribeCommand} into a {@link Subscription} domain object.
      * <p>
      * Applies normalization, default schedule, and timezone, and wraps keywords
      * and language into a {@link SubscriptionFilter}.
      */
-    public Subscription map(TelegramSubscribeCommand cmd, List<String> normalizedKeywords) {
+    public Subscription map(SubscribeCommand cmd, List<String> normalizedKeywords) {
         Objects.requireNonNull(cmd, "Subscribe command must not be null");
 
         if (normalizedKeywords == null || normalizedKeywords.isEmpty() ||
