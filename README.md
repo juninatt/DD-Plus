@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/juninatt/telegram-market-notifier/actions/workflows/ci.yml/badge.svg)](https://github.com/juninatt/telegram-market-notifier/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/juninatt/telegram-market-notifier/actions/workflows/codeql.yml/badge.svg)](https://github.com/juninatt/telegram-market-notifier/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/juninatt/telegram-market-notifier/branch/main/graph/badge.svg)](https://codecov.io/gh/juninatt/telegram-market-notifier)
 
 **Market Notifier** is a personal Java project built with Maven and Spring Boot.
 It integrates multiple financial data providers (e.g., [Finnhub](https://finnhub.io/), [Marketaux](https://www.marketaux.com/))
