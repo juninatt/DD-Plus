@@ -48,6 +48,15 @@ Notes:
 * Each preset fires in its own configured timezone -- see the [README](../README.md) for details.
 * Each subscription is stored in the subscriptions.yml file and linked to your Telegram chat ID (and, if provided, your email address).
 
+**Subscribing by email instead:** if IMAP polling is configured (see the README), you can create
+a subscription by emailing the configured inbox with the same syntax in the body, minus the
+leading `/`:
+```text
+subscribe Tesla en 10
+```
+The subscription is delivered to the address you sent from, unless the body itself ends with a
+different email address.
+
 ---
 
 ## 📋 3) List active subscriptions

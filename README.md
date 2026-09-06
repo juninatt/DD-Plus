@@ -24,10 +24,14 @@ Financial news API focused on delivering headline articles filtered by criteria 
 ### Delivery channels
 
 - **Telegram** — interactive; subscriptions are created and managed via bot commands.
-- **Email** — delivered via [Resend](https://resend.com); currently configured directly in the subscriptions file
-(there's no `/subscribe` support for setting an email address yet — see Configuration below).
+- **Email** — delivered via [Resend](https://resend.com).
 
 A subscription can use either channel, both, or neither (if disabled) — the dispatcher resolves whichever address each registered channel needs per subscription.
+
+### Creating a subscription
+
+- **Via Telegram**: `/subscribe "<keywords>" <language> [schedule] <maxItems> [email]` — see the [How to Use guide](_docs/how-to-use.md). Adding an email as the last argument delivers that subscription to both Telegram and email.
+- **Via email**: send an email to the configured inbox with a body of `subscribe "<keywords>" <language> [schedule] <maxItems>` (same syntax, no leading `/` needed). The subscription is delivered to your own sending address unless the body specifies a different one. Requires IMAP polling to be configured -- see Configuration below.
 
 ---
 
@@ -81,6 +85,12 @@ Before running the application, make sure you have valid API tokens for **Finnhu
 2. Verify a sending domain, or use Resend's shared test sender while developing.
 3. Create an API key.
 
+**Gmail IMAP (subscribing by email, optional)**
+1. Use a dedicated Gmail account (not a personal one) as the subscription inbox.
+2. Enable 2-Step Verification on that account, then create an [App Password](https://myaccount.google.com/apppasswords).
+3. Set `EMAIL_IMAP_ENABLED=true`, `EMAIL_IMAP_USERNAME` to the Gmail address, and `EMAIL_IMAP_PASSWORD` to the App Password (not the regular account password).
+4. Other Microsoft consumer accounts (outlook.com, live.com, hotmail.com) no longer support this -- they require OAuth 2.0 instead of a plain username/password, which this app doesn't implement.
+
 ### 2) Configure application.yml
 
 A central `application.yml` in `app-runner/resources` loads separate YAML files for each module.
@@ -98,12 +108,13 @@ app-runner/
 ```
 
 Each file contains placeholders for its own API tokens and settings, read from environment variables:
-`FINNHUB_API_KEY`, `MARKETAUX_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_IDS`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`.
+`FINNHUB_API_KEY`, `MARKETAUX_API_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_IDS`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`,
+and (optional, for subscribing by email) `EMAIL_IMAP_ENABLED`, `EMAIL_IMAP_HOST`, `EMAIL_IMAP_USERNAME`, `EMAIL_IMAP_PASSWORD`.
 All configuration files are loaded automatically when the application starts.
 
-### 3) Enable email delivery for a subscription
+### 3) Enable email delivery for a subscription manually
 
-There's no bot command for this yet — add an `email` field directly to the subscription's entry in the subscriptions file (path set by `subscription.storage.path`, default `subscriptions.yml`):
+Subscribing via Telegram or email (see above) sets this automatically. To edit it directly instead, add an `email` field to the subscription's entry in the subscriptions file (path set by `subscription.storage.path`, default `subscriptions.yml`):
 
 ```yaml
 subscriptions:

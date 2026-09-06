@@ -3,3 +3,13 @@ email:
     base-url: https://api.resend.com
     token: ${RESEND_API_KEY}
     from-address: ${RESEND_FROM_ADDRESS}
+
+  imap:
+    enabled: ${EMAIL_IMAP_ENABLED:false}
+    host: ${EMAIL_IMAP_HOST:imap.gmail.com}
+    port: ${EMAIL_IMAP_PORT:993}
+    username: ${EMAIL_IMAP_USERNAME}
+    password: ${EMAIL_IMAP_PASSWORD}
+    ssl: ${EMAIL_IMAP_SSL:true}
+    folder: ${EMAIL_IMAP_FOLDER:INBOX}
+    poll-interval-seconds: ${EMAIL_IMAP_POLL_INTERVAL_SECONDS:60}
