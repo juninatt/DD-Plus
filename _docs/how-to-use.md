@@ -1,6 +1,6 @@
-# How to use Telegram Market Notifier
+# How to use Market Notifier
 
-Telegram Market Notifier delivers financial news updates directly through Telegram.  
+Market Notifier delivers financial news updates directly through Telegram.  
 Once the application is running, users interact with a Telegram bot to manage their news subscriptions.
 
 ---

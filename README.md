@@ -1,9 +1,9 @@
-# Telegram Market Notifier
+# Market Notifier
 
 [![CI](https://github.com/juninatt/telegram-market-notifier/actions/workflows/ci.yml/badge.svg)](https://github.com/juninatt/telegram-market-notifier/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/juninatt/telegram-market-notifier/actions/workflows/codeql.yml/badge.svg)](https://github.com/juninatt/telegram-market-notifier/actions/workflows/codeql.yml)
 
-**Telegram Market Notifier** is a personal Java project built with Maven and Spring Boot.
+**Market Notifier** is a personal Java project built with Maven and Spring Boot.
 It integrates multiple financial data providers (e.g., [Finnhub](https://finnhub.io/), [Marketaux](https://www.marketaux.com/))
 and delivers automated, scheduled updates through [Telegram](https://telegram.org/) and/or email.
 
