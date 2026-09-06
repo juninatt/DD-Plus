@@ -35,7 +35,8 @@ class TelegramSubscriptionMapperTest {
                 DEFAULT_LANGUAGE,
                 DEFAULT_MAX_ITEMS,
                 IGNORED_KEYWORD_LIST,
-                DEFAULT_SCHEDULE
+                DEFAULT_SCHEDULE,
+                null
         );
     }
 
@@ -82,6 +83,23 @@ class TelegramSubscriptionMapperTest {
             Subscription subscription = mapper.map(defaultCommand, normalizedKeywords);
 
             assertEquals(List.of("first", "second", "third"), subscription.getFilter().getKeywords());
+        }
+
+        @Test
+        @DisplayName("Carries the email address into the subscription when present")
+        void carriesEmailWhenPresent() {
+            TelegramSubscribeCommand command = createCommandWithEmail("user@example.com");
+            Subscription subscription = mapper.map(command, List.of("ai"));
+
+            assertEquals("user@example.com", subscription.getEmail());
+        }
+
+        @Test
+        @DisplayName("Leaves email null when not provided")
+        void leavesEmailNullWhenAbsent() {
+            Subscription subscription = mapper.map(defaultCommand, List.of("ai"));
+
+            assertNull(subscription.getEmail());
         }
     }
 
@@ -206,7 +224,8 @@ class TelegramSubscriptionMapperTest {
                 language,
                 DEFAULT_MAX_ITEMS,
                 IGNORED_KEYWORD_LIST,
-                DEFAULT_SCHEDULE
+                DEFAULT_SCHEDULE,
+                null
         );
     }
 
@@ -216,7 +235,19 @@ class TelegramSubscriptionMapperTest {
                 DEFAULT_LANGUAGE,
                 DEFAULT_MAX_ITEMS,
                 IGNORED_KEYWORD_LIST,
-                schedule
+                schedule,
+                null
+        );
+    }
+
+    private TelegramSubscribeCommand createCommandWithEmail(String email) {
+        return new TelegramSubscribeCommand(
+                DEFAULT_CHAT_ID,
+                DEFAULT_LANGUAGE,
+                DEFAULT_MAX_ITEMS,
+                IGNORED_KEYWORD_LIST,
+                DEFAULT_SCHEDULE,
+                email
         );
     }
 }

@@ -39,6 +39,7 @@ public class TelegramSubscriptionMapper implements SubscriptionMapper<TelegramSu
 
         Subscription sub = new Subscription();
         sub.setChatId(cmd.chatId());
+        sub.setEmail(cmd.email());
         sub.setSchedule(cmd.schedule() != null ? cmd.schedule() : SchedulePreset.MORNING_EVENING);
         sub.setTimezone(DEFAULT_TZ);
         sub.setMaxItems(cmd.maxItems());

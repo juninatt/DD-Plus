@@ -25,6 +25,10 @@ public class TelegramInputParser {
     // Matches either quoted strings or single non-whitespace tokens
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\"([^\"]+)\"|(\\S+)");
 
+    // Permissive email check -- just enough to tell "this trailing token is an address"
+    // apart from maxItems, not a full RFC 5322 validator.
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+
     private static final Map<String, SchedulePreset> SCHEDULE_ALIASES = Map.ofEntries(
             Map.entry("morning", SchedulePreset.MORNING),
             Map.entry("m", SchedulePreset.MORNING),
@@ -47,13 +51,17 @@ public class TelegramInputParser {
     /**
      * Parses a /subscribe command into a {@link TelegramSubscribeCommand}.
      * Format:
-     *   /subscribe <keywords...> <language> [schedule] <maxItems>
+     *   /subscribe <keywords...> <language> [schedule] <maxItems> [email]
      * Where [schedule] is optional and can be one of:
      *   morning|m, evening|e, morning_evening|me, morning_lunch_evening|mle,
      *   europe_open|eo, europe_close|ec, us_open|uo, us_close|uc
+     * Where [email] is optional -- if the last token looks like an email address, the
+     * subscription is also delivered to that address in addition to Telegram.
      */
     public TelegramSubscribeCommand parseSubscribeCommand(TelegramCommand command) {
         List<String> tokens = extractTokens(command.message().strip());
+        String email = extractTrailingEmailOrNull(tokens);
+
         validateCommandFormat(tokens);
 
         int maxItems = extractAndValidateMaxItems(tokens.get(tokens.size() - 1));
@@ -72,7 +80,7 @@ public class TelegramInputParser {
             keywords = extractKeywords(tokens,tokens.size() - 2);
         }
 
-        return new TelegramSubscribeCommand(command.chatId(), language, maxItems, keywords, schedule);
+        return new TelegramSubscribeCommand(command.chatId(), language, maxItems, keywords, schedule, email);
     }
 
     /**
@@ -97,8 +105,24 @@ public class TelegramInputParser {
     private void validateCommandFormat(List<String> tokens) {
         if (tokens.size() < 4 || !tokens.get(0).equalsIgnoreCase("/subscribe")) {
             throw new IllegalArgumentException(
-                    "Usage: /subscribe <keywords> <language> [schedule] <maxItems>");
+                    "Usage: /subscribe <keywords> <language> [schedule] <maxItems> [email]");
         }
+    }
+
+    /**
+     * Removes and returns the trailing token if it looks like an email address, leaving
+     * the remaining tokens for the rest of the parser to handle as before.
+     */
+    private String extractTrailingEmailOrNull(List<String> tokens) {
+        if (tokens.isEmpty()) {
+            return null;
+        }
+        String last = tokens.get(tokens.size() - 1);
+        if (EMAIL_PATTERN.matcher(last).matches()) {
+            tokens.remove(tokens.size() - 1);
+            return last;
+        }
+        return null;
     }
 
     /**

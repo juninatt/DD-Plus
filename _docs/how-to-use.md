@@ -20,7 +20,7 @@ Use the `/subscribe` command to follow specific keywords or topics.
 
 **Syntax**
 ```text
-/subscribe <keywords...> <language> [schedule] <maxItems>
+/subscribe <keywords...> <language> [schedule] <maxItems> [email]
 ```
 
 **Parameters**
@@ -29,8 +29,9 @@ Use the `/subscribe` command to follow specific keywords or topics.
 |----------|-------------|
 | `<keywords>` | One or more keywords to match against article titles and summaries. Quotes are required only if the keyword contains spaces. |
 | `<language>` | **Required.** Must be exactly two letters (e.g. `en`, `sv`, `es`). |
-| `[schedule]` | **Optional. Must appear before `<maxItems>` if provided.** Valid options:<br>• `morning`, `m` — morning only<br>• `evening`, `e` — evening only<br>• `morning_evening`, `me` — morning and evening<br>• `morning_lunch_evening`, `mle` — morning, lunch, and evening |
+| `[schedule]` | **Optional. Must appear before `<maxItems>` if provided.** Valid options:<br>• `morning`, `m` — morning only<br>• `evening`, `e` — evening only<br>• `morning_evening`, `me` — morning and evening<br>• `morning_lunch_evening`, `mle` — morning, lunch, and evening<br>• `europe_open`, `eo` / `europe_close`, `ec` — European market open/close<br>• `us_open`, `uo` / `us_close`, `uc` — US market open/close |
 | `<maxItems>` | **Required.** Must be an integer. |
+| `[email]` | **Optional. Must be the last token.** When present, this subscription is also delivered by email in addition to Telegram. |
 
 
 Examples
@@ -39,12 +40,13 @@ Examples
 /subscribe Microsoft Google en 10 
 /subscribe "AI Bubble" "Silicon Valley" en me 20 
 /subscribe "Green energy" sun wind es morning 15
+/subscribe Tesla en 10 you@example.com
 ```
 
 Notes:
 * If [schedule] is omitted, `morning_evening` will be applied automatically.
-* All scheduled updates use the Europe/Stockholm timezone.
-* Each subscription is stored in the subscriptions.yml file and linked to your Telegram chat ID.
+* Each preset fires in its own configured timezone -- see the [README](../README.md) for details.
+* Each subscription is stored in the subscriptions.yml file and linked to your Telegram chat ID (and, if provided, your email address).
 
 ---
 
@@ -72,12 +74,14 @@ to display a short description of all available commands.
 
 ## 🔄 5) Receive updates
 
-The bot automatically sends you the latest financial news based on your subscriptions.  
-Articles are delivered as plain text messages containing:
+The bot automatically sends you the latest financial news based on your subscriptions, formatted with:
 - Headline
 - Summary
-- Source
+- Source and publish date
+- Related tickers
 - Direct link to the article
+
+If you added an email address when subscribing, the same update is also sent there.
 
 Delivery happens at regular intervals based on the app’s scheduler configuration.
 
@@ -96,7 +100,7 @@ Market Notifier also works in Telegram groups or channels:
 
 | Command | Description |
 |----------|--------------|
-| `/subscribe <keywords> <language> [schedule] <maxItems>` | Subscribe to a topic |
+| `/subscribe <keywords> <language> [schedule] <maxItems> [email]` | Subscribe to a topic |
 | `/unsubscribe <keyword>` | Remove a specific topic |
 | `/list` | Show active subscriptions |
 | `/help` | Show help message |

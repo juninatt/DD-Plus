@@ -110,7 +110,7 @@ class TelegramServiceTest {
         @DisplayName("When valid command is received, subscription is persisted and confirmation sent")
         void subscribeCommand_withValidInput_persistsSubscriptionAndRepliesSaved() {
             TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
-                    CHAT_ID, "en", 10, List.of("Tesla"), SchedulePreset.MORNING
+                    CHAT_ID, "en", 10, List.of("Tesla"), SchedulePreset.MORNING, null
             );
             Subscription mockSubscription = new Subscription();
 
@@ -127,7 +127,7 @@ class TelegramServiceTest {
         @DisplayName("When command contains multiple keywords, all are included in subscription")
         void subscribeCommand_withMultipleKeywords_includesAllKeywordsInSubscription() {
             TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
-                    CHAT_ID, "en", 10, List.of("Tesla", "AI", "Nvidia"), SchedulePreset.MORNING
+                    CHAT_ID, "en", 10, List.of("Tesla", "AI", "Nvidia"), SchedulePreset.MORNING, null
             );
             when(commandParser.parseSubscribeCommand(any())).thenReturn(parsedCmd);
 
@@ -141,7 +141,7 @@ class TelegramServiceTest {
         @DisplayName("When mapper throws exception, bot replies with 'unexpected' error message")
         void subscribeCommand_withMapperException_repliesUnexpectedError() {
             TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
-                    CHAT_ID, "en", 5, List.of("Tesla"), SchedulePreset.MORNING
+                    CHAT_ID, "en", 5, List.of("Tesla"), SchedulePreset.MORNING, null
             );
             when(commandParser.parseSubscribeCommand(any())).thenReturn(parsedCmd);
             when(mapper.map(any(), any())).thenThrow(new RuntimeException("Mapping failure"));
@@ -155,7 +155,7 @@ class TelegramServiceTest {
         @DisplayName("When language is null, subscription is still persisted successfully")
         void subscribeCommand_withNullLanguage_persistsSubscriptionSuccessfully() {
             TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
-                    CHAT_ID, null, 10, List.of("Tesla"), SchedulePreset.MORNING
+                    CHAT_ID, null, 10, List.of("Tesla"), SchedulePreset.MORNING, null
             );
             Subscription mockSubscription = new Subscription();
 
@@ -521,7 +521,7 @@ class TelegramServiceTest {
         void fullFlow_withSubscribeListAndUnsubscribe_worksAsExpected() {
             Subscription mockSubscription = new Subscription();
             TelegramSubscribeCommand parsedCmd = new TelegramSubscribeCommand(
-                    CHAT_ID, "en", 5, List.of("Tesla"), SchedulePreset.EVENING
+                    CHAT_ID, "en", 5, List.of("Tesla"), SchedulePreset.EVENING, null
             );
 
             when(commandParser.parseSubscribeCommand(any())).thenReturn(parsedCmd);

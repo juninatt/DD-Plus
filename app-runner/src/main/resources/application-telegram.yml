@@ -12,12 +12,13 @@ telegram:
       👋 Welcome! Here’s how to use Market Notifier:
 
       Create a subscription:
-        /subscribe "<keywords>" <language> [schedule] <maxItems>
+        /subscribe "<keywords>" <language> [schedule] <maxItems> [email]
 
       Examples:
         /subscribe "Tesla" en 10
         /subscribe "AI stocks" en me 15
         /subscribe "Volvo" sv evening 5
+        /subscribe "Tesla" en 10 you@example.com
 
       Parameters:
         <keywords>  – one or more words; quote if spaces are needed
@@ -26,6 +27,7 @@ telegram:
                        |europe_open|europe_close|us_open|us_close
                        aliases: m|e|me|mle|eo|ec|uo|uc
         <maxItems>  – maximum number of news items (1–20)
+        [email]     – (optional) also deliver this subscription by email
 
       Tip: use /help to see this again.
 

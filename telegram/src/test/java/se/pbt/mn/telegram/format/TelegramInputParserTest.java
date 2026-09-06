@@ -230,4 +230,49 @@ class TelegramInputParserTest {
             assertEquals("en", result.language());
         }
     }
+
+    @Nested
+    @DisplayName("Email token:")
+    class Email {
+
+        @Test
+        @DisplayName("Parses a trailing email address without a schedule")
+        void parsesTrailingEmailWithoutSchedule() {
+            var result = parser.parseSubscribeCommand(
+                    new TelegramCommand(1L, "/subscribe Tesla en 10 user@example.com"));
+
+            assertEquals("user@example.com", result.email());
+            assertEquals(10, result.maxItems());
+            assertNull(result.schedule());
+            assertEquals(List.of("Tesla"), result.keywords());
+        }
+
+        @Test
+        @DisplayName("Parses a trailing email address alongside an explicit schedule")
+        void parsesTrailingEmailWithSchedule() {
+            var result = parser.parseSubscribeCommand(
+                    new TelegramCommand(1L, "/subscribe Tesla en morning 10 user@example.com"));
+
+            assertEquals("user@example.com", result.email());
+            assertEquals(SchedulePreset.MORNING, result.schedule());
+            assertEquals(10, result.maxItems());
+        }
+
+        @Test
+        @DisplayName("Leaves email null when no trailing token looks like an address")
+        void leavesEmailNullWhenAbsent() {
+            var result = parser.parseSubscribeCommand(new TelegramCommand(1L, "/subscribe Tesla en 10"));
+
+            assertNull(result.email());
+        }
+
+        @Test
+        @DisplayName("Does not mistake maxItems for an email address")
+        void doesNotTreatMaxItemsAsEmail() {
+            var result = parser.parseSubscribeCommand(new TelegramCommand(1L, "/subscribe Tesla en 10"));
+
+            assertEquals(10, result.maxItems());
+            assertNull(result.email());
+        }
+    }
 }
