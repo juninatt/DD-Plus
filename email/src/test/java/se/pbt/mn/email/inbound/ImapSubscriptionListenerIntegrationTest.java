@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Exercises a real (in-memory) IMAP round trip -- a message delivered into a mailbox is
@@ -46,6 +47,7 @@ class ImapSubscriptionListenerIntegrationTest {
         properties.setFolder("INBOX");
 
         subscriptionService = mock(SubscriptionService.class);
+        when(subscriptionService.save(any())).thenReturn(SubscriptionService.SaveResult.ok("saved"));
         listener = new ImapSubscriptionListener(properties, subscriptionService, new SubscribeCommandMapper());
     }
 

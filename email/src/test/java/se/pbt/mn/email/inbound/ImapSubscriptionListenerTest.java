@@ -23,6 +23,7 @@ class ImapSubscriptionListenerTest {
     @BeforeEach
     void setUp() {
         subscriptionService = mock(SubscriptionService.class);
+        when(subscriptionService.save(any())).thenReturn(SubscriptionService.SaveResult.ok("saved"));
         listener = new ImapSubscriptionListener(new ImapProperties(), subscriptionService, new SubscribeCommandMapper());
     }
 
@@ -66,5 +67,14 @@ class ImapSubscriptionListenerTest {
                 () -> listener.processMessage("sender@example.com", "this is not a command"));
 
         verifyNoInteractions(subscriptionService);
+    }
+
+    @Test
+    @DisplayName("Does not throw when the subscription service rejects the save")
+    void doesNotThrowWhenSaveIsRejected() {
+        when(subscriptionService.save(any())).thenReturn(SubscriptionService.SaveResult.fail("duplicate"));
+
+        assertDoesNotThrow(() -> listener.processMessage("sender@example.com", "subscribe Tesla en 10"));
+        verify(subscriptionService).save(any());
     }
 }

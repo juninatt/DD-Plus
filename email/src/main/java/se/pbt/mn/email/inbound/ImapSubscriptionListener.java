@@ -186,8 +186,13 @@ public class ImapSubscriptionListener implements SmartLifecycle {
                 .toList();
 
         Subscription subscription = mapper.map(command, normalizedKeywords);
-        subscriptionService.save(subscription);
-        log.info("New subscription created via email for {}", email);
+        SubscriptionService.SaveResult result = subscriptionService.save(subscription);
+
+        if (result.success()) {
+            log.info("New subscription created via email for {}", email);
+        } else {
+            log.warn("Rejected inbound subscription email for {}: {}", email, result.message());
+        }
     }
 
     private static String extractFromAddress(Message message) throws MessagingException {
