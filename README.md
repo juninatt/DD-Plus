@@ -82,7 +82,9 @@ Before running the application, make sure you have valid API tokens for **Finnhu
 
 **Resend (email delivery)**
 1. Sign up at [resend.com](https://resend.com) (free tier: 3,000 emails/month).
-2. Verify a sending domain, or use Resend's shared test sender while developing.
+2. Verify a sending domain, or use Resend's shared test sender (`onboarding@resend.dev`) while developing --
+   note that the shared sender can only deliver to the email address registered on your own Resend account,
+   not to arbitrary recipients. Verify a real domain once you need to send to anyone else.
 3. Create an API key.
 
 **Gmail IMAP (subscribing by email, optional)**
