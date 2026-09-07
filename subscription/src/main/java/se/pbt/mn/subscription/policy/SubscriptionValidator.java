@@ -30,13 +30,13 @@ public class SubscriptionValidator {
 
         List<Subscription> safeExisting = Optional.ofNullable(existing).orElse(List.of());
         boolean duplicate = safeExisting.stream().anyMatch(existingSub ->
-                existingSub.getChatId() == candidate.getChatId()
+                sanitizer.isSameRecipient(existingSub, candidate)
                         && sanitizer.usesSameLanguage(existingSub, candidate)
                         && sanitizer.containsSameKeywords(existingSub, candidate)
         );
 
         return duplicate
-                ? Optional.of("A subscription with the same keywords and language already exists for this chat.")
+                ? Optional.of("A subscription with the same keywords and language already exists for this recipient.")
                 : Optional.empty();
     }
 

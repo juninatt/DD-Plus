@@ -63,6 +63,26 @@ public class SubscriptionSanitizer {
         return Objects.equals(sa, sb);
     }
 
+    /**
+     * Checks if two subscriptions belong to the same recipient -- either the same
+     * (non-zero) Telegram chat id, or the same email address.
+     * <p>
+     * A chatId of 0 (no Telegram chat, e.g. an email-only subscription) never counts as a
+     * match by itself -- otherwise every email-only subscriber would collide with every
+     * other one, since they all share chatId 0.
+     */
+    public boolean isSameRecipient(Subscription a, Subscription b) {
+        if (a == null || b == null) return false;
+
+        if (a.getChatId() > 0 && a.getChatId() == b.getChatId()) {
+            return true;
+        }
+
+        String emailA = a.getEmail();
+        String emailB = b.getEmail();
+        return emailA != null && !emailA.isBlank() && emailA.equalsIgnoreCase(emailB);
+    }
+
 
     /**
      * Extracts keywords from a subscription, or empty list if missing.

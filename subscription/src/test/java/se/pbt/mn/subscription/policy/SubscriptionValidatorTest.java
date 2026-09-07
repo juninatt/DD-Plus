@@ -76,6 +76,7 @@ class SubscriptionValidatorTest {
             var candidate = SubscriptionTestFactory.subscription("sub-2", newFilter, true);
             candidate.setChatId(100);
 
+            when(sanitizer.isSameRecipient(existing, candidate)).thenReturn(true);
             when(sanitizer.usesSameLanguage(existing, candidate)).thenReturn(true);
             when(sanitizer.containsSameKeywords(existing, candidate)).thenReturn(true);
 
@@ -83,7 +84,7 @@ class SubscriptionValidatorTest {
 
             assertTrue(result.isPresent());
             assertEquals(
-                    "A subscription with the same keywords and language already exists for this chat.",
+                    "A subscription with the same keywords and language already exists for this recipient.",
                     result.get()
             );
         }
@@ -135,6 +136,7 @@ class SubscriptionValidatorTest {
             var candidate = SubscriptionTestFactory.subscription("sub-2", candidateFilter, true);
             candidate.setChatId(1);
 
+            when(sanitizer.isSameRecipient(existing, candidate)).thenReturn(true);
             when(sanitizer.usesSameLanguage(existing, candidate)).thenReturn(true);
             when(sanitizer.containsSameKeywords(existing, candidate)).thenReturn(true);
 
@@ -142,7 +144,7 @@ class SubscriptionValidatorTest {
 
             assertTrue(result.isPresent());
             assertEquals(
-                    "A subscription with the same keywords and language already exists for this chat.",
+                    "A subscription with the same keywords and language already exists for this recipient.",
                     result.get()
             );
         }
@@ -162,6 +164,7 @@ class SubscriptionValidatorTest {
                     SubscriptionTestFactory.filter(List.of("Crypto"), List.of("ETH"), "en"), true);
             candidate.setChatId(10);
 
+            when(sanitizer.isSameRecipient(s2, candidate)).thenReturn(true);
             when(sanitizer.usesSameLanguage(s2, candidate)).thenReturn(true);
             when(sanitizer.containsSameKeywords(s2, candidate)).thenReturn(true);
 
@@ -194,10 +197,50 @@ class SubscriptionValidatorTest {
             var sub = SubscriptionTestFactory.subscription("sub-1", filter, true);
             sub.setChatId(1);
 
+            when(sanitizer.isSameRecipient(any(), any())).thenReturn(true);
             when(sanitizer.usesSameLanguage(any(), any()))
                     .thenThrow(new RuntimeException("Sanitizer failed"));
 
             assertThrows(RuntimeException.class, () -> validator.validate(sub, List.of(sub)));
+        }
+    }
+
+    @Nested
+    @DisplayName("Email-only recipients (real sanitizer, no mocking)")
+    class EmailOnlyRecipients {
+
+        private final SubscriptionValidator realValidator = new SubscriptionValidator(new SubscriptionSanitizer());
+
+        @Test
+        @DisplayName("Does not treat two different email-only subscribers as duplicates of each other")
+        void validate_withDifferentEmailSubscribers_returnsEmptyResult() {
+            var existing = SubscriptionTestFactory.subscription("sub-1",
+                    SubscriptionTestFactory.filter(List.of("Tesla"), List.of("TSLA"), "en"), true);
+            existing.setEmail("first@example.com");
+
+            var candidate = SubscriptionTestFactory.subscription("sub-2",
+                    SubscriptionTestFactory.filter(List.of("Tesla"), List.of("TSLA"), "en"), true);
+            candidate.setEmail("second@example.com");
+
+            var result = realValidator.validate(candidate, List.of(existing));
+
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        @DisplayName("Still detects a duplicate when the same email subscribes twice with the same filter")
+        void validate_withSameEmailSubscriberTwice_returnsError() {
+            var existing = SubscriptionTestFactory.subscription("sub-1",
+                    SubscriptionTestFactory.filter(List.of("Tesla"), List.of("TSLA"), "en"), true);
+            existing.setEmail("same@example.com");
+
+            var candidate = SubscriptionTestFactory.subscription("sub-2",
+                    SubscriptionTestFactory.filter(List.of("Tesla"), List.of("TSLA"), "en"), true);
+            candidate.setEmail("same@example.com");
+
+            var result = realValidator.validate(candidate, List.of(existing));
+
+            assertTrue(result.isPresent());
         }
     }
 }

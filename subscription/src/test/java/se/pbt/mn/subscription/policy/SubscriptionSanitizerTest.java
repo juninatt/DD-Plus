@@ -108,6 +108,61 @@ class SubscriptionSanitizerTest {
     }
 
     @Nested
+    @DisplayName("isSameRecipient")
+    class IsSameRecipient {
+
+        @Test
+        @DisplayName("Returns true when both have the same non-zero chat id")
+        void isSameRecipient_withSameChatId_returnsTrue() {
+            var s1 = SubscriptionTestFactory.subscription("sub-1");
+            s1.setChatId(123);
+            var s2 = SubscriptionTestFactory.subscription("sub-2");
+            s2.setChatId(123);
+
+            assertTrue(sanitizer.isSameRecipient(s1, s2));
+        }
+
+        @Test
+        @DisplayName("Returns false when both have chatId 0, even with no email set")
+        void isSameRecipient_withBothChatIdZero_returnsFalse() {
+            var s1 = SubscriptionTestFactory.subscription("sub-1");
+            var s2 = SubscriptionTestFactory.subscription("sub-2");
+
+            assertFalse(sanitizer.isSameRecipient(s1, s2));
+        }
+
+        @Test
+        @DisplayName("Returns true when both have the same email, case-insensitively")
+        void isSameRecipient_withSameEmail_returnsTrue() {
+            var s1 = SubscriptionTestFactory.subscription("sub-1");
+            s1.setEmail("User@Example.com");
+            var s2 = SubscriptionTestFactory.subscription("sub-2");
+            s2.setEmail("user@example.com");
+
+            assertTrue(sanitizer.isSameRecipient(s1, s2));
+        }
+
+        @Test
+        @DisplayName("Returns false for two different email-only subscribers who both have chatId 0")
+        void isSameRecipient_withDifferentEmailsAndChatIdZero_returnsFalse() {
+            var s1 = SubscriptionTestFactory.subscription("sub-1");
+            s1.setEmail("first@example.com");
+            var s2 = SubscriptionTestFactory.subscription("sub-2");
+            s2.setEmail("second@example.com");
+
+            assertFalse(sanitizer.isSameRecipient(s1, s2));
+        }
+
+        @Test
+        @DisplayName("Returns false when either subscription is null")
+        void isSameRecipient_withNullSubscription_returnsFalse() {
+            var s1 = SubscriptionTestFactory.subscription("sub-1");
+            assertFalse(sanitizer.isSameRecipient(s1, null));
+            assertFalse(sanitizer.isSameRecipient(null, s1));
+        }
+    }
+
+    @Nested
     @DisplayName("usesSameLanguage")
     class UsesSameLanguage {
 
