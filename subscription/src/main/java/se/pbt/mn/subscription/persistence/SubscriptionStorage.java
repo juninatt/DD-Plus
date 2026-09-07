@@ -11,7 +11,7 @@ import se.pbt.mn.subscription.model.SubscriptionListWrapper;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +42,7 @@ public class SubscriptionStorage {
         try (InputStream input = tryLoadInputStream(path)) {
             if (input == null) {
                 log.debug("No subscriptions file found at '{}' yet -- treating as empty", path);
-                return Collections.emptyList();
+                return new ArrayList<>();
             }
 
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -50,7 +50,7 @@ public class SubscriptionStorage {
             return wrapper.getSubscriptions();
         } catch (Exception e) {
             log.warn("Failed to load subscriptions from '{}': {}", path, e.getMessage());
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
     }
 
