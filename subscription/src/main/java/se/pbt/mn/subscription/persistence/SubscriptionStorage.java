@@ -2,6 +2,8 @@ package se.pbt.mn.subscription.persistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import se.pbt.mn.subscription.model.Subscription;
 import se.pbt.mn.subscription.model.SubscriptionListWrapper;
@@ -18,6 +20,8 @@ import java.util.List;
  */
 @Component
 public class SubscriptionStorage {
+
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionStorage.class);
 
     // TODO: Move to a shared constants file if reused
     private static final String DEFAULT_FILE = "subscriptions.yml";
@@ -37,7 +41,7 @@ public class SubscriptionStorage {
     public List<Subscription> loadSubscriptions(String path) {
         try (InputStream input = tryLoadInputStream(path)) {
             if (input == null) {
-                System.err.println("File not found: " + path);
+                log.debug("No subscriptions file found at '{}' yet -- treating as empty", path);
                 return Collections.emptyList();
             }
 
@@ -45,7 +49,7 @@ public class SubscriptionStorage {
             SubscriptionListWrapper wrapper = mapper.readValue(input, SubscriptionListWrapper.class);
             return wrapper.getSubscriptions();
         } catch (Exception e) {
-            System.err.println("Failed to load subscriptions: " + e.getMessage());
+            log.warn("Failed to load subscriptions from '{}': {}", path, e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -92,7 +96,7 @@ public class SubscriptionStorage {
             Files.writeString(Paths.get(filePath), mapper.writeValueAsString(wrapper));
 
         } catch (IOException e) {
-            System.err.println("Failed to save subscriptions: " + e.getMessage());
+            log.warn("Failed to save subscriptions to '{}': {}", filePath, e.getMessage());
         }
     }
 }
