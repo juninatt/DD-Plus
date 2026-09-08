@@ -1,9 +1,11 @@
 package se.pbt.mn.subscription.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import se.pbt.mn.core.subscription.SchedulePreset;
 import se.pbt.mn.subscription.config.SubscriptionStorageProperties;
+import se.pbt.mn.subscription.event.SubscriptionCreatedEvent;
 import se.pbt.mn.subscription.format.SubscriptionFormatter;
 import se.pbt.mn.subscription.model.Subscription;
 import se.pbt.mn.subscription.persistence.SubscriptionStorage;
@@ -31,6 +33,7 @@ public class SubscriptionService {
     private final SubscriptionValidator validator;
     private final SubscriptionFormatter formatter;
     private final SubscriptionStorageProperties storageProperties;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Validates and saves a new subscription.
@@ -55,6 +58,7 @@ public class SubscriptionService {
             subscription.setId(idGenerator.generateUniqueId(subscription, existing));
             existing.add(subscription);
             storage.saveSubscriptions(existing, storageProperties.getPath());
+            eventPublisher.publishEvent(new SubscriptionCreatedEvent(subscription));
 
             return SaveResult.ok("Subscription created with id: " + subscription.getId());
         } catch (Exception e) {

@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import se.pbt.mn.core.subscription.SchedulePreset;
 import se.pbt.mn.subscription.config.SubscriptionStorageProperties;
+import se.pbt.mn.subscription.event.SubscriptionCreatedEvent;
 import se.pbt.mn.subscription.format.SubscriptionFormatter;
 import se.pbt.mn.subscription.persistence.SubscriptionStorage;
 import se.pbt.mn.subscription.policy.SubscriptionIdGenerator;
@@ -28,6 +30,7 @@ class SubscriptionServiceTest {
     private SubscriptionValidator validator;
     private SubscriptionFormatter formatter;
     private SubscriptionStorageProperties storageProperties;
+    private ApplicationEventPublisher eventPublisher;
     private SubscriptionService service;
 
     @BeforeEach
@@ -37,8 +40,9 @@ class SubscriptionServiceTest {
         validator = new SubscriptionValidator(new SubscriptionSanitizer());
         formatter = new SubscriptionFormatter();
         storageProperties = new SubscriptionStorageProperties();
+        eventPublisher = mock(ApplicationEventPublisher.class);
 
-        service = new SubscriptionService(storage, idGenerator, validator, formatter, storageProperties);
+        service = new SubscriptionService(storage, idGenerator, validator, formatter, storageProperties, eventPublisher);
     }
 
     @Nested
@@ -58,6 +62,7 @@ class SubscriptionServiceTest {
             assertTrue(result.success());
             assertTrue(result.message().contains("Subscription created with id:"));
             verify(storage).saveSubscriptions(anyList(), anyString());
+            verify(eventPublisher).publishEvent(new SubscriptionCreatedEvent(sub));
         }
 
         @Test
@@ -68,6 +73,7 @@ class SubscriptionServiceTest {
             assertFalse(result.success());
             assertEquals("Subscription cannot be null.", result.message());
             verifyNoInteractions(storage);
+            verifyNoInteractions(eventPublisher);
         }
 
         @Test
@@ -81,6 +87,7 @@ class SubscriptionServiceTest {
             assertFalse(result.success());
             assertTrue(result.message().contains("filter cannot be null"));
             verify(storage, never()).saveSubscriptions(anyList(), anyString());
+            verifyNoInteractions(eventPublisher);
         }
 
         @Test
@@ -95,6 +102,7 @@ class SubscriptionServiceTest {
 
             assertFalse(result.success());
             assertTrue(result.message().contains("Failed to save subscription"));
+            verifyNoInteractions(eventPublisher);
         }
     }
 
