@@ -6,21 +6,18 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import se.pbt.mn.core.news.NewsGroup;
 import se.pbt.mn.core.news.NewsItem;
-import se.pbt.mn.core.news.NewsSource;
 import se.pbt.mn.core.notification.Notification;
 import se.pbt.mn.core.notification.NotificationChannel;
 import se.pbt.mn.core.subscription.SchedulePreset;
-import se.pbt.mn.dispatch.filter.SubscriptionFilterMatcher;
+import se.pbt.mn.dispatch.fetch.NewsFetcher;
 import se.pbt.mn.dispatch.grouping.NewsGrouper;
+import se.pbt.mn.dispatch.matching.SubscriptionGroupMatcher;
+import se.pbt.mn.dispatch.notification.NotificationBuilder;
 import se.pbt.mn.subscription.model.Subscription;
 import se.pbt.mn.subscription.service.SubscriptionService;
 
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Ties subscription schedules to news fetching, filtering, and delivery.
@@ -39,16 +36,16 @@ public class NewsDispatchScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(NewsDispatchScheduler.class);
 
-    private final List<NewsSource> sources;
+    private final NewsFetcher newsFetcher;
     private final List<NotificationChannel> channels;
     private final SubscriptionService subscriptionService;
 
     public NewsDispatchScheduler(
-            List<NewsSource> sources,
+            NewsFetcher newsFetcher,
             List<NotificationChannel> channels,
             SubscriptionService subscriptionService
     ) {
-        this.sources = sources;
+        this.newsFetcher = newsFetcher;
         this.channels = channels;
         this.subscriptionService = subscriptionService;
     }
@@ -73,7 +70,7 @@ public class NewsDispatchScheduler {
             return;
         }
 
-        List<NewsItem> allNews = fetchAll();
+        List<NewsItem> allNews = newsFetcher.fetchAll();
         if (allNews.isEmpty()) {
             log.debug("No news fetched for preset={}, skipping {} due subscription(s)", preset, due.size());
             return;
@@ -82,14 +79,10 @@ public class NewsDispatchScheduler {
         List<NewsGroup> allGroups = NewsGrouper.group(allNews);
 
         for (Subscription subscription : due) {
-            List<NewsGroup> matched = allGroups.stream()
-                    .filter(group -> group.items().stream()
-                            .anyMatch(item -> SubscriptionFilterMatcher.matches(item, subscription.getFilter())))
-                    .limit(Math.max(subscription.getMaxItems(), 0))
-                    .toList();
+            List<NewsGroup> matched = SubscriptionGroupMatcher.match(allGroups, subscription);
 
             for (NewsGroup group : matched) {
-                Notification notification = toNotification(group);
+                Notification notification = NotificationBuilder.fromGroup(group);
                 for (NotificationChannel channel : channels) {
                     String recipient = resolveRecipient(channel, subscription);
                     if (recipient != null) {
@@ -110,50 +103,5 @@ public class NewsDispatchScheduler {
             case "email" -> subscription.getEmail();
             default -> null;
         };
-    }
-
-    /**
-     * Fetches every registered source, isolating per-source failures, and dedupes the
-     * combined result by {@link NewsItem.ProviderRef}.
-     */
-    private List<NewsItem> fetchAll() {
-        Map<NewsItem.ProviderRef, NewsItem> deduped = new LinkedHashMap<>();
-        for (NewsSource source : sources) {
-            List<NewsItem> items;
-            try {
-                items = source.fetchLatest();
-            } catch (Exception e) {
-                log.warn("News source '{}' failed, skipping: {}", source.id(), e.toString());
-                continue;
-            }
-            for (NewsItem item : items) {
-                deduped.putIfAbsent(item.providerRef(), item);
-            }
-        }
-        return List.copyOf(deduped.values());
-    }
-
-    /**
-     * Builds a Notification from a group's primary (earliest-published) item, listing
-     * every distinct source in the group so a subscriber can see a story is corroborated
-     * by more than one outlet even though only the primary's link is included.
-     */
-    private Notification toNotification(NewsGroup group) {
-        NewsItem primary = group.primary();
-
-        String sources = group.items().stream()
-                .map(NewsItem::source)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.joining(", "));
-
-        return new Notification(
-                primary.title(),
-                primary.description(),
-                primary.url() == null ? null : primary.url().toString(),
-                sources.isBlank() ? null : sources,
-                primary.publishedAt(),
-                primary.tickers()
-        );
     }
 }

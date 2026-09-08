@@ -10,6 +10,7 @@ import se.pbt.mn.core.news.NewsSource;
 import se.pbt.mn.core.notification.Notification;
 import se.pbt.mn.core.notification.NotificationChannel;
 import se.pbt.mn.core.subscription.SchedulePreset;
+import se.pbt.mn.dispatch.fetch.NewsFetcher;
 import se.pbt.mn.subscription.model.Subscription;
 import se.pbt.mn.subscription.model.SubscriptionFilter;
 import se.pbt.mn.subscription.service.SubscriptionService;
@@ -42,7 +43,8 @@ class NewsDispatchSchedulerTest {
         when(channel.id()).thenReturn("telegram");
         subscriptionService = mock(SubscriptionService.class);
 
-        scheduler = new NewsDispatchScheduler(List.of(sourceA, sourceB), List.of(channel), subscriptionService);
+        scheduler = new NewsDispatchScheduler(
+                new NewsFetcher(List.of(sourceA, sourceB)), List.of(channel), subscriptionService);
     }
 
     private static NewsItem item(String id, String title, List<String> tickers) {
@@ -239,7 +241,7 @@ class NewsDispatchSchedulerTest {
             NotificationChannel emailChannel = mock(NotificationChannel.class);
             when(emailChannel.id()).thenReturn("email");
             var multiChannelScheduler = new NewsDispatchScheduler(
-                    List.of(sourceA, sourceB), List.of(channel, emailChannel), subscriptionService);
+                    new NewsFetcher(List.of(sourceA, sourceB)), List.of(channel, emailChannel), subscriptionService);
 
             var sub = subscription(1L, 10, List.of("tesla"));
             sub.setEmail("user@example.com");
@@ -259,7 +261,7 @@ class NewsDispatchSchedulerTest {
             NotificationChannel emailChannel = mock(NotificationChannel.class);
             when(emailChannel.id()).thenReturn("email");
             var multiChannelScheduler = new NewsDispatchScheduler(
-                    List.of(sourceA, sourceB), List.of(channel, emailChannel), subscriptionService);
+                    new NewsFetcher(List.of(sourceA, sourceB)), List.of(channel, emailChannel), subscriptionService);
 
             var sub = subscription(1L, 10, List.of("tesla"));
             when(subscriptionService.findEnabledBySchedule(SchedulePreset.MORNING)).thenReturn(List.of(sub));
