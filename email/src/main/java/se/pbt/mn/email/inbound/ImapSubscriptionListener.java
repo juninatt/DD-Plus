@@ -154,12 +154,13 @@ public class ImapSubscriptionListener implements SmartLifecycle {
     }
 
     private void processMessageSafely(Message message) {
+        String body = null;
         try {
             String from = extractFromAddress(message);
-            String body = extractText(message);
+            body = extractText(message);
             processMessage(from, body);
         } catch (Exception e) {
-            log.warn("Failed to process inbound subscription email: {}", e.toString());
+            log.warn("Failed to process inbound subscription email: {} (raw body: '{}')", e.toString(), body);
         } finally {
             try {
                 message.setFlag(Flags.Flag.SEEN, true);
