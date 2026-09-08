@@ -85,7 +85,7 @@ public class EmailNotificationChannel implements NotificationChannel {
             html.append("<h2>").append(escapeHtml(notification.title())).append("</h2>");
         }
         if (hasText(notification.body())) {
-            html.append("<p>").append(escapeHtml(notification.body())).append("</p>");
+            html.append("<p>").append(escapeHtml(notification.body()).replace("\n", "<br>")).append("</p>");
         }
 
         String meta = formatMeta(notification);
